@@ -1,98 +1,106 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# TaskFlow — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A NestJS + TypeORM + PostgreSQL API for the TaskFlow task manager.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**Status: Day 1 complete** — Docker, PostgreSQL, JWT Authentication, Users, Swagger.
+Projects/Tasks/Comments modules land on Day 2.
 
-## Description
+## Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- NestJS 10, TypeORM 0.3, PostgreSQL 16
+- JWT access + refresh tokens (passport-jwt), bcrypt password hashing
+- class-validator / class-transformer for request validation & response sanitization
+- Swagger (OpenAPI) auto-generated docs
 
-## Project setup
+## Quick start
 
 ```bash
-$ npm install
+cp .env.example .env
+docker-compose up --build
 ```
 
-## Compile and run the project
+That's it. This starts:
+- `postgres` — Postgres 16 on `5432`
+- `backend` — NestJS API on `3001`, hot-reloading from `./src`
+
+Swagger docs: **http://localhost:3001/api**
+
+## Running without Docker
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
+cp .env.example .env   # then point DATABASE_HOST to localhost
+npm run start:dev
 ```
 
-## Run tests
+You'll need a local Postgres instance matching the `.env` credentials.
 
-```bash
-# unit tests
-$ npm run test
+## Auth flow
 
-# e2e tests
-$ npm run test:e2e
+1. `POST /auth/register` → creates the user, returns `{ user, accessToken, refreshToken }`
+2. `POST /auth/login` → same response shape
+3. Send `Authorization: Bearer <accessToken>` on protected routes (`GET /auth/profile`, etc.)
+4. When the access token expires, call `POST /auth/refresh` with `Authorization: Bearer <refreshToken>` to get a new pair
+5. `POST /auth/logout` clears the stored refresh token hash server-side
 
-# test coverage
-$ npm run test:cov
+Refresh tokens are never stored in plaintext — only a bcrypt hash lives on the
+`users.hashed_refresh_token` column, and it's rotated on every refresh.
+
+## Routes implemented (Day 1)
+
+```
+POST /auth/register
+POST /auth/login
+POST /auth/refresh   (requires refresh token)
+POST /auth/logout    (requires access token)
+GET  /auth/profile   (requires access token)
 ```
 
-## Deployment
+## Project structure
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```
+src
+├── auth
+│   ├── decorators/current-user.decorator.ts
+│   ├── dto/            (register, login, tokens)
+│   ├── guards/         (JwtAuthGuard, JwtRefreshGuard)
+│   ├── interfaces/     (JwtPayload)
+│   ├── strategies/     (JwtStrategy, JwtRefreshStrategy)
+│   ├── auth.controller.ts
+│   ├── auth.module.ts
+│   └── auth.service.ts
+├── users
+│   ├── entities/user.entity.ts
+│   ├── dto/create-user.dto.ts
+│   ├── users.module.ts
+│   └── users.service.ts
+├── common
+│   └── filters/http-exception.filter.ts
+├── config
+│   └── typeorm.config.ts
+├── app.module.ts
+└── main.ts
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Design notes
 
-## Resources
+- **Password & refresh-token hashes are never serialized.** They're marked
+  `@Exclude()` on the entity and stripped a second time in `AuthService` before
+  the response leaves the controller — belt and suspenders.
+- **`synchronize: true`** is used for Day 1-2 development speed. Before this
+  goes anywhere near production it should switch to TypeORM migrations
+  (`npm run migration:generate` / `migration:run` scripts are already wired up
+  against `src/config/typeorm.config.ts`).
+- **Global `ValidationPipe`** (`whitelist` + `forbidNonWhitelisted`) rejects any
+  request body field not declared on a DTO — this is what `@IsString() @Length(3,100)`-style
+  decorators actually enforce.
+- **Two separate JWT strategies** (`jwt`, `jwt-refresh`) with two secrets and
+  two guards, so an access token can never be replayed against `/auth/refresh`
+  and vice versa.
 
-Check out a few resources that may come in handy when working with NestJS:
+## Next up (Day 2)
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- `projects` + `project_members` (many-to-many with roles: OWNER/ADMIN/MEMBER)
+- `tasks` with `TaskStatus` / `Priority` enums
+- `comments`
+- `ProjectOwnerGuard` for authorization on project-scoped routes
