@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { ProjectsModule } from './projects/projects.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -28,7 +30,9 @@ import { UsersModule } from './users/users.module';
     }),
     AuthModule,
     UsersModule,
-    // ProjectsModule, TasksModule, CommentsModule land on Day 2
+    ProjectsModule,
+    TasksModule,
+    // CommentsModule lands later (cut-first item if time is tight)
   ],
 })
 export class AppModule {}
