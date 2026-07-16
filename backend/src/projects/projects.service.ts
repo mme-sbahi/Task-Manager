@@ -1,0 +1,124 @@
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Project } from './entities/project.entity';
+import { ProjectMember } from './entities/project-member.entity';
+import { ProjectRole } from './enums/project-role.enum';
+import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
+import { AddMemberDto } from './dto/add-member.dto';
+import { UsersService } from '../users/users.service';
+
+@Injectable()
+export class ProjectsService {
+  constructor(
+    @InjectRepository(Project)
+    private readonly projectsRepository: Repository<Project>,
+    @InjectRepository(ProjectMember)
+    private readonly membersRepository: Repository<ProjectMember>,
+    private readonly usersService: UsersService,
+  ) {}
+
+  // Every project the user can see: owned by them, or where they're a member.
+  async findAllForUser(userId: string): Promise<Project[]> {
+    const memberships = await this.membersRepository.find({
+      where: { userId },
+    });
+    const projectIds = memberships.map((m) => m.projectId);
+
+    if (projectIds.length === 0) {
+      return [];
+    }
+
+    return this.projectsRepository
+      .createQueryBuilder('project')
+      .where('project.id IN (:...projectIds)', { projectIds })
+      .orderBy('project.createdAt', 'DESC')
+      .getMany();
+  }
+
+  async findOne(id: string): Promise<Project> {
+    const project = await this.projectsRepository.findOne({ where: { id } });
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+    return project;
+  }
+
+  // Creating a project also creates the OWNER membership row in the same
+  // transaction, so "who owns this" and "who can access this" never drift
+  // out of sync with each other.
+  async create(ownerId: string, dto: CreateProjectDto): Promise<Project> {
+    const project = this.projectsRepository.create({
+      name: dto.name,
+      description: dto.description,
+      ownerId,
+    });
+    const saved = await this.projectsRepository.save(project);
+
+    const ownerMembership = this.membersRepository.create({
+      projectId: saved.id,
+      userId: ownerId,
+      role: ProjectRole.OWNER,
+    });
+    await this.membersRepository.save(ownerMembership);
+
+    return saved;
+  }
+
+  async update(id: string, dto: UpdateProjectDto): Promise<Project> {
+    const project = await this.findOne(id);
+    Object.assign(project, dto);
+    return this.projectsRepository.save(project);
+  }
+
+  async remove(id: string): Promise<void> {
+    const project = await this.findOne(id);
+    await this.projectsRepository.remove(project);
+  }
+
+  async addMember(projectId: string, dto: AddMemberDto): Promise<ProjectMember> {
+    const user = await this.usersService.findByEmail(dto.email);
+    if (!user) {
+      throw new NotFoundException(`No user found with email ${dto.email}`);
+    }
+
+    const existing = await this.membersRepository.findOne({
+      where: { projectId, userId: user.id },
+    });
+    if (existing) {
+      throw new ForbiddenException('User is already a member of this project');
+    }
+
+    const member = this.membersRepository.create({
+      projectId,
+      userId: user.id,
+      role: dto.role ?? ProjectRole.MEMBER,
+    });
+    return this.membersRepository.save(member);
+  }
+
+  async listMembers(projectId: string): Promise<ProjectMember[]> {
+    return this.membersRepository.find({
+      where: { projectId },
+      relations: ['user'],
+    });
+  }
+
+  async removeMember(projectId: string, userId: string): Promise<void> {
+    const membership = await this.membersRepository.findOne({
+      where: { projectId, userId },
+    });
+    if (!membership) {
+      throw new NotFoundException('Membership not found');
+    }
+    if (membership.role === ProjectRole.OWNER) {
+      throw new ForbiddenException('Cannot remove the project owner');
+    }
+    await this.membersRepository.remove(membership);
+  }
+}

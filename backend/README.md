@@ -2,8 +2,9 @@
 
 A NestJS + TypeORM + PostgreSQL API for the TaskFlow task manager.
 
-**Status: Day 1 complete** — Docker, PostgreSQL, JWT Authentication, Users, Swagger.
-Projects/Tasks/Comments modules land on Day 2.
+**Status: Day 1 + Day 2 complete** — Docker, PostgreSQL, JWT Authentication,
+Users, Swagger, Projects (with membership/roles), Tasks, authorization
+guards, and automated tests.
 
 ## Stack
 
@@ -46,15 +47,63 @@ You'll need a local Postgres instance matching the `.env` credentials.
 Refresh tokens are never stored in plaintext — only a bcrypt hash lives on the
 `users.hashed_refresh_token` column, and it's rotated on every refresh.
 
-## Routes implemented (Day 1)
+## Routes implemented
 
 ```
-POST /auth/register
-POST /auth/login
-POST /auth/refresh   (requires refresh token)
-POST /auth/logout    (requires access token)
-GET  /auth/profile   (requires access token)
+POST   /auth/register
+POST   /auth/login
+POST   /auth/refresh   (requires refresh token)
+POST   /auth/logout    (requires access token)
+GET    /auth/profile   (requires access token)
+
+GET    /projects                     list projects you belong to
+POST   /projects                     create a project (you become OWNER)
+GET    /projects/:id                 must be a member
+PATCH  /projects/:id                 must be OWNER/ADMIN
+DELETE /projects/:id                 must be OWNER/ADMIN
+GET    /projects/:id/members         must be a member
+POST   /projects/:id/members         invite by email, must be OWNER/ADMIN
+DELETE /projects/:id/members/:userId must be OWNER/ADMIN
+
+GET    /projects/:id/tasks           list tasks, must be a member
+POST   /projects/:id/tasks           create a task, must be a member
+PATCH  /tasks/:id                    update/move a task, must be a member
+DELETE /tasks/:id                    must be a member
 ```
+
+All routes above except `/auth/register` and `/auth/login` require
+`Authorization: Bearer <accessToken>`.
+
+## Testing
+
+**Manual walkthrough:** see [`MANUAL_TESTING.md`](./MANUAL_TESTING.md) for a
+full step-by-step `curl`/Swagger tour of auth, projects, tasks, and the
+authorization guards actually blocking/allowing things.
+
+**Unit tests** (mocked repositories, no DB needed):
+```bash
+npm run test
+```
+Covers `AuthService` (register/login/refresh/logout, including bad password
+and forged refresh token cases), `ProjectsService` (owner-membership
+creation, duplicate-invite prevention, owner-removal protection), and
+`TasksService` (defaults, due-date parsing, not-found handling).
+
+**End-to-end tests** (real HTTP requests through real guards, against a real
+Postgres test database):
+```bash
+# one-time setup — create the dedicated test database
+docker exec -it taskflow_postgres psql -U taskflow -c "CREATE DATABASE taskflow_test"
+
+npm run test:e2e
+```
+This boots the actual app (auth + projects + tasks wired together exactly
+like production) against `taskflow_test` — a separate database so it never
+touches your dev data — and drops/recreates the schema on every run. It
+walks the same story as the manual guide: register two users, create a
+project, confirm a non-member gets `403`, invite them, confirm they can now
+see the project but still can't delete it, create and move a task, and
+confirm a stranger gets blocked from touching it.
 
 ## Project structure
 
@@ -68,18 +117,41 @@ src
 │   ├── strategies/     (JwtStrategy, JwtRefreshStrategy)
 │   ├── auth.controller.ts
 │   ├── auth.module.ts
-│   └── auth.service.ts
+│   ├── auth.service.ts
+│   └── auth.service.spec.ts
 ├── users
 │   ├── entities/user.entity.ts
 │   ├── dto/create-user.dto.ts
 │   ├── users.module.ts
 │   └── users.service.ts
+├── projects
+│   ├── entities/          (Project, ProjectMember)
+│   ├── enums/project-role.enum.ts      (OWNER, ADMIN, MEMBER)
+│   ├── dto/                (create/update project, add-member)
+│   ├── guards/              (ProjectMemberGuard, ProjectOwnerGuard)
+│   ├── projects.controller.ts
+│   ├── projects.module.ts
+│   ├── projects.service.ts
+│   └── projects.service.spec.ts
+├── tasks
+│   ├── entities/task.entity.ts
+│   ├── enums/               (TaskStatus, Priority)
+│   ├── dto/                  (create/update task)
+│   ├── guards/task-project-member.guard.ts
+│   ├── project-tasks.controller.ts   (nested: /projects/:id/tasks)
+│   ├── tasks.controller.ts           (standalone: /tasks/:id)
+│   ├── tasks.module.ts
+│   ├── tasks.service.ts
+│   └── tasks.service.spec.ts
 ├── common
 │   └── filters/http-exception.filter.ts
 ├── config
 │   └── typeorm.config.ts
 ├── app.module.ts
 └── main.ts
+test
+├── test-app.module.ts    (real modules, Postgres test DB instead of dev)
+└── app.e2e-spec.ts       (full HTTP walkthrough — auth, projects, tasks, guards)
 ```
 
 ## Design notes
@@ -98,9 +170,9 @@ src
   two guards, so an access token can never be replayed against `/auth/refresh`
   and vice versa.
 
-## Next up (Day 2)
+## Next up (Day 3)
 
-- `projects` + `project_members` (many-to-many with roles: OWNER/ADMIN/MEMBER)
-- `tasks` with `TaskStatus` / `Priority` enums
-- `comments`
-- `ProjectOwnerGuard` for authorization on project-scoped routes
+- Frontend: Next.js login/register pages, protected routes, dashboard
+- `comments` module (backend — deliberately deferred since it's a "cut
+  first if short on time" feature; the four things that matter most —
+  Auth, Projects, Tasks, Docker — are already solid)
