@@ -49,6 +49,14 @@ export interface Task {
   status: string
 }
 
+export interface ProjectMember {
+  id: string
+  email: string
+  fullName: string
+  role: string
+  joinedAt: string
+}
+
 export interface DashboardStats {
   totalProjects: number
   totalTasks: number
@@ -62,6 +70,11 @@ export interface ProfileData {
   name: string
   email: string
   avatar?: File
+}
+
+export interface ProjectData {
+  name: string
+  description: string
 }
 
 export interface PasswordData {
@@ -120,19 +133,10 @@ export const dashboard = {
 
 export const projects = {
   async list(): Promise<Project[]> {
-    // TODO: Replace with real API call
-    // const res = await fetch('/api/projects')
-    // if (!res.ok) throw new Error('Failed to fetch projects')
-    // return res.json()
+    const res = await api.get('/projects')
+    console.log("hnaaaaaaaaaa",res.data)
+    return res.data
 
-    return [
-      { id: 1, name: "Design System", description: "Component library and design tokens", progress: 80, tasks: 24, members: 4, status: "Active" },
-      { id: 2, name: "Mobile App v2", description: "React Native rewrite with new features", progress: 45, tasks: 36, members: 6, status: "In Progress" },
-      { id: 3, name: "API Gateway", description: "Unified API layer for microservices", progress: 90, tasks: 18, members: 3, status: "Active" },
-      { id: 4, name: "User Dashboard", description: "Customer-facing analytics dashboard", progress: 30, tasks: 42, members: 5, status: "Planning" },
-      { id: 5, name: "Auth Service", description: "OAuth 2.0 and SSO integration", progress: 60, tasks: 15, members: 2, status: "Active" },
-      { id: 6, name: "Notification System", description: "Email, push and in-app notifications", progress: 15, tasks: 28, members: 4, status: "Planning" },
-    ]
   },
 
   async get(id: number): Promise<Project> {
@@ -152,14 +156,11 @@ export const projects = {
   },
 
   async create(data: Partial<Project>): Promise<Project> {
-    // TODO: Replace with real API call
-    // const res = await fetch('/api/projects', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data),
-    // })
-    // if (!res.ok) throw new Error('Failed to create project')
-    // return res.json()
+    const res = await api.post('/projects', {
+      name: data.name,
+      description: data.description
+    })
+    return res.data
 
     return { id: Date.now(), ...data } as Project
   },
@@ -180,6 +181,33 @@ export const projects = {
   async delete(id: number): Promise<void> {
     // TODO: Replace with real API call
     // await fetch(`/api/projects/${id}`, { method: 'DELETE' })
+  },
+
+  async listMembers(projectId: number): Promise<ProjectMember[]> {
+    // TODO: Replace with real API call
+    // const res = await fetch(`/api/projects/${projectId}/members`)
+    // if (!res.ok) throw new Error('Failed to fetch members')
+    // return res.json()
+
+    return [
+      { id: "1", email: "sahil@company.com", fullName: "Sahil A.", role: "Owner", joinedAt: "2026-01-15" },
+      { id: "2", email: "alice@company.com", fullName: "Alice Chen", role: "Admin", joinedAt: "2026-02-10" },
+      { id: "3", email: "bob@company.com", fullName: "Bob Martinez", role: "Member", joinedAt: "2026-03-05" },
+    ]
+  },
+
+  async inviteMember(projectId: number, email: string): Promise<void> {
+    // TODO: Replace with real API call
+    // await fetch(`/api/projects/${projectId}/members`, {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ email }),
+    // })
+  },
+
+  async removeMember(projectId: number, memberId: string): Promise<void> {
+    // TODO: Replace with real API call
+    // await fetch(`/api/projects/${projectId}/members/${memberId}`, { method: 'DELETE' })
   },
 }
 
