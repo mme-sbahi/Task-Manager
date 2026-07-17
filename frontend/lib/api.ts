@@ -22,7 +22,9 @@ export interface User {
   id: string
   email: string
   fullName: string
+  role?: string
   avatarUrl?: string
+  avatarInitials?: string
   createdAt: string
   updatedAt: string
 }
@@ -255,9 +257,11 @@ export const settings = {
 
     return {
       id: "1",
-      name: data.name,
+      fullName: data.name,
       email: data.email,
       role: "Product Designer",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       avatarInitials: data.name
         .split(" ")
         .map((s) => s[0])

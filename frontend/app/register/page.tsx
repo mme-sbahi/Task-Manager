@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { AlertCircle, Loader2, CheckSquare } from "lucide-react"
 import { auth } from "@/lib/api"
 import { getErrorMessage } from "@/lib/errors"
+import { Toaster } from "@/components/ui/sonner"
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -49,12 +50,11 @@ export default function RegisterPage() {
   const handleBlur = (field: keyof RegisterForm) => {
     if (!user[field]) return
     try {
-      const fieldSchema = registerSchema.pick({ [field]: true })
-      fieldSchema.parse({ [field]: user[field] })
+      registerSchema.shape[field].parse(user[field])
       setErrors(prev => ({ ...prev, [field]: undefined }))
     } catch (err) {
       if (err instanceof z.ZodError) {
-        setErrors(prev => ({ ...prev, [field]: err.errors[0].message }))
+        setErrors(prev => ({ ...prev, [field]: err.issues[0].message }))
       }
     }
   }
@@ -69,7 +69,7 @@ export default function RegisterPage() {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: Partial<RegisterForm> = {}
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           const path = err.path[0]
           if (typeof path === "string") {
             newErrors[path as keyof RegisterForm] = err.message
@@ -94,6 +94,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen">
+      <Toaster position="top-right" richColors />
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:48px_48px]" />

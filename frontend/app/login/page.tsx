@@ -42,12 +42,11 @@ export default function LoginPage() {
     const handleBlur = (field: keyof LoginForm) => {
       if (!user[field]) return
       try {
-        const fieldSchema = loginSchema.pick({ [field]: true })
-        fieldSchema.parse({ [field]: user[field] })
+        loginSchema.shape[field].parse(user[field])
         setError(prev => ({ ...prev, [field]: undefined }))
       } catch (err) {
         if (err instanceof z.ZodError) {
-          setError(prev => ({ ...prev, [field]: err.errors[0].message }))
+          setError(prev => ({ ...prev, [field]: err.issues[0].message }))
         }
       }
     }
@@ -59,25 +58,23 @@ export default function LoginPage() {
     try {
       loginSchema.parse(user)
     } catch (error) {
-          if (error instanceof z.ZodError) {
-            const newErrors: Partial<LoginForm> = {}
-            error.errors.forEach((err) => {
-              const path = err.path[0]
-              if (typeof path === "string") {
-                newErrors[path as keyof LoginForm] = err.message
-              }
-            })
-            setError(newErrors)
-            return
+      if (error instanceof z.ZodError) {
+        const newErrors: Partial<LoginForm> = {}
+        error.issues.forEach((err) => {
+          const path = err.path[0]
+          if (typeof path === "string") {
+            newErrors[path as keyof LoginForm] = err.message
           }
-        }
+        })
+        setError(newErrors)
+        return
+      }
+    }
 
         setIsLoading(true)
 
         try {
           await auth.login(user.email, user.password)
-          
-          // Show success toast
           toast.success("Welcome back! 🎉", {
             description: "You have been successfully signed in.",
             duration: 4000,
@@ -95,10 +92,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Add Toaster component here */}
       <Toaster position="top-right" richColors />
-      
-      {/* Left brand panel */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:48px_48px]" />
