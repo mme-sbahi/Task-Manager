@@ -11,13 +11,11 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
+import { tasks as tasksApi, Task } from '@/lib/api'
 
-interface Task {
-  id: number; title: string; description: string; priority: "urgent" | "high" | "medium" | "low"; dueDate: string; assignee: string; status: string
-}
 
-export function TaskModal({ open, onOpenChange, task, onSave }: {
-  open: boolean; onOpenChange: (v: boolean) => void; task: Task | null; onSave: (data: Partial<Task>) => void
+export function TaskModal({ projectId, open, onOpenChange, task, onSave }: {projectId:string; 
+  open: boolean; onOpenChange: (v: boolean) => void; task: Task | null; onSave: (data: Partial<Task>) => void ; string
 }) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -35,12 +33,10 @@ export function TaskModal({ open, onOpenChange, task, onSave }: {
     }
   }, [task, open])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement save via backend API
-    // import { tasks as tasksApi } from '@/lib/api'
-    // if (task) { await tasksApi.update(task.id, { title, description, status, priority, dueDate, assignee }) }
-    // else { await tasksApi.create({ title, description, status, priority, dueDate, assignee }) }
+    if (task) { await tasksApi.update(projectId, task.id, { title, description, status, priority, dueDate, assignee }) }
+    else { await tasksApi.create(projectId,{ title, description, status, priority, dueDate, assignee }) }
     onSave({ title, description, status, priority, dueDate, assignee })
   }
 

@@ -195,6 +195,7 @@ export const tasks = {
   },
 
   async create(projectId: string, data: Partial<Task>): Promise<Task> {
+    console.log("srewrewrewrewrewrewrewrewrwer", data)
     const res = await api.post(`/projects/${projectId}/tasks`, data)
     return res.data
   },

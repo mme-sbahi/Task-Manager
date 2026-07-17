@@ -20,9 +20,9 @@ const columns = [
 
 
 
-export function KanbanBoard(projectId: string) {
+export function KanbanBoard(projectId: any) {
   const [tasks, setTasks] = useState<Task[]>([])
-  useEffect(() => { tasksApi.list(projectId).then(setTasks) }, [])
+  useEffect(() => { tasksApi.list(projectId.projectId).then(setTasks) }, [])
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
 
@@ -30,8 +30,8 @@ export function KanbanBoard(projectId: string) {
   const handleEdit = (task: Task) => { setEditingTask(task); setModalOpen(true) }
   const handleSave = async (data: Partial<Task>) => {
     try {
-      if (editingTask) { await tasksApi.update(projectId, editingTask.id, data) }
-      else { await tasksApi.create(projectId, data) }
+      if (editingTask) { await tasksApi.update(projectId.projectId, editingTask.id, data) }
+      else { await tasksApi.create(projectId.projectId, data) }
       setModalOpen(false)
       setEditingTask(null)
 
@@ -40,7 +40,7 @@ export function KanbanBoard(projectId: string) {
     }
   }
   const handleDelete = async (taskId: number) => {
-    await tasksApi.delete(projectId, taskId)
+    await tasksApi.delete(projectId.projectId, taskId)
     setTasks(tasks.filter((t) => t.id !== taskId))
   }
 
@@ -70,7 +70,7 @@ export function KanbanBoard(projectId: string) {
           )
         })}
       </div>
-      <TaskModal open={modalOpen} onOpenChange={setModalOpen} task={editingTask} onSave={handleSave} />
+      <TaskModal projectId={projectId.projectId as string} open={modalOpen} onOpenChange={setModalOpen} task={editingTask} onSave={handleSave} />
     </div>
   )
 }
