@@ -48,7 +48,6 @@ export default function ProjectDetailPage() {
       ])
 
       setProject(projectData)
-      console.log("memberrrrrrsss", membersData)
       setMembers(membersData)
 
       setEditName(projectData.name)
@@ -97,7 +96,7 @@ export default function ProjectDetailPage() {
       toast.success("Project deleted")
       router.push("/projects")
     } catch(err) {
-      toast.error("Failed to delete project")
+      toast.error(getErrorMessage(err))
       setDeleting(false)
     }
   }
@@ -208,7 +207,7 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Kanban Board */}
-      <KanbanBoard />
+      <KanbanBoard projectId={projectId} />
 
       {/* Members Section */}
       <Card>

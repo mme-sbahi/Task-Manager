@@ -188,52 +188,25 @@ export const projects = {
 // ------------------------------------------------------------------
 
 export const tasks = {
-  async list(projectId?: number): Promise<Task[]> {
-    // TODO: Replace with real API call
-    // const params = projectId ? `?projectId=${projectId}` : ''
-    // const res = await fetch(`/api/tasks${params}`)
-    // if (!res.ok) throw new Error('Failed to fetch tasks')
-    // return res.json()
+  async list(projectId:string): Promise<Task[]> {
+    const res = await api.get(`/projects/${projectId}/tasks`)
+    return res.data()
 
-    return [
-      { id: 1, title: "Design system color tokens", description: "Update color palette in design tokens", priority: "high", dueDate: "2026-07-20", assignee: "SA", status: "todo" },
-      { id: 2, title: "API rate limiting", description: "Implement rate limiting middleware", priority: "urgent", dueDate: "2026-07-18", assignee: "MK", status: "todo" },
-      { id: 3, title: "User onboarding flow", description: "Redesign the onboarding experience", priority: "medium", dueDate: "2026-07-22", assignee: "AL", status: "in-progress" },
-      { id: 4, title: "Database migration script", description: "Write migration for v2 schema", priority: "high", dueDate: "2026-07-17", assignee: "JD", status: "review" },
-      { id: 5, title: "Mobile responsive nav", description: "Make navigation responsive on mobile", priority: "low", dueDate: "2026-07-25", assignee: "SA", status: "done" },
-      { id: 6, title: "Dark mode support", description: "Add dark mode theme support", priority: "medium", dueDate: "2026-07-19", assignee: "MK", status: "in-progress" },
-    ]
   },
 
-  async create(data: Partial<Task>): Promise<Task> {
-    // TODO: Replace with real API call
-    // const res = await fetch('/api/tasks', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data),
-    // })
-    // if (!res.ok) throw new Error('Failed to create task')
-    // return res.json()
-
-    return { id: Date.now(), ...data } as Task
+  async create(projectId: string, data: Partial<Task>): Promise<Task> {
+    const res = await api.post(`/projects/${projectId}/tasks`, data)
+    return res.data
   },
 
-  async update(id: number, data: Partial<Task>): Promise<Task> {
-    // TODO: Replace with real API call
-    // const res = await fetch(`/api/tasks/${id}`, {
-    //   method: 'PATCH',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data),
-    // })
-    // if (!res.ok) throw new Error('Failed to update task')
-    // return res.json()
+  async update(projectId: string ,id: number, data: Partial<Task>): Promise<Task> {
+    const res = await api.patch(`/projects/${projectId}/tasks/${id}`, data)
+    return res.data
 
-    return { id, ...data } as Task
   },
 
-  async delete(id: number): Promise<void> {
-    // TODO: Replace with real API call
-    // await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
+  async delete(projectId:string, id: number): Promise<void> {
+    await api.delete(`/project/${projectId}/tasks/${id}`)
   },
 }
 

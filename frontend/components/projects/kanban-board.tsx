@@ -1,20 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TaskCard } from "@/components/projects/task-card"
 import { TaskModal } from "@/components/tasks/task-modal"
+import { tasks as tasksApi, Task } from '@/lib/api'
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/errors"
 
-interface Task {
-  id: number
-  title: string
-  description: string
-  priority: "urgent" | "high" | "medium" | "low"
-  dueDate: string
-  assignee: string
-  status: string
-}
+
 
 const columns = [
   { id: "todo", title: "Todo", color: "bg-muted-foreground" },
@@ -23,42 +18,29 @@ const columns = [
   { id: "done", title: "Done", color: "bg-emerald-500" },
 ]
 
-// TODO: Replace with API data — import { tasks as tasksApi } from '@/lib/api'
-// const [tasks, setTasks] = useState<Task[]>([])
-// useEffect(() => { tasksApi.list().then(setTasks) }, [])
-const initialTasks: Task[] = [
-  { id: 1, title: "Design system color tokens", description: "Update color palette in design tokens", priority: "high", dueDate: "2026-07-20", assignee: "SA", status: "todo" },
-  { id: 2, title: "API rate limiting", description: "Implement rate limiting middleware", priority: "urgent", dueDate: "2026-07-18", assignee: "MK", status: "todo" },
-  { id: 3, title: "User onboarding flow", description: "Redesign the onboarding experience", priority: "medium", dueDate: "2026-07-22", assignee: "AL", status: "in-progress" },
-  { id: 4, title: "Database migration script", description: "Write migration for v2 schema", priority: "high", dueDate: "2026-07-17", assignee: "JD", status: "review" },
-  { id: 5, title: "Mobile responsive nav", description: "Make navigation responsive on mobile", priority: "low", dueDate: "2026-07-25", assignee: "SA", status: "done" },
-  { id: 6, title: "Dark mode support", description: "Add dark mode theme support", priority: "medium", dueDate: "2026-07-19", assignee: "MK", status: "in-progress" },
-]
 
-export function KanbanBoard() {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks)
+
+export function KanbanBoard(projectId: string) {
+  const [tasks, setTasks] = useState<Task[]>([])
+  useEffect(() => { tasksApi.list(projectId).then(setTasks) }, [])
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   const handleCreate = () => { setEditingTask(null); setModalOpen(true) }
   const handleEdit = (task: Task) => { setEditingTask(task); setModalOpen(true) }
-  const handleSave = (data: Partial<Task>) => {
-    // TODO: Implement save via backend API
-    // import { tasks as tasksApi } from '@/lib/api'
-    // if (editingTask) { await tasksApi.update(editingTask.id, data) }
-    // else { await tasksApi.create(data) }
-    if (editingTask) {
-      setTasks(tasks.map((t) => (t.id === editingTask.id ? { ...t, ...data } as Task : t)))
-    } else {
-      setTasks([...tasks, { ...data, id: Date.now() } as Task])
+  const handleSave = async (data: Partial<Task>) => {
+    try {
+      if (editingTask) { await tasksApi.update(projectId, editingTask.id, data) }
+      else { await tasksApi.create(projectId, data) }
+      setModalOpen(false)
+      setEditingTask(null)
+
+    } catch (err){
+      toast.error(getErrorMessage(err))
     }
-    setModalOpen(false)
-    setEditingTask(null)
   }
-  const handleDelete = (taskId: number) => {
-    // TODO: Implement delete via backend API
-    // import { tasks as tasksApi } from '@/lib/api'
-    // await tasksApi.delete(taskId)
+  const handleDelete = async (taskId: number) => {
+    await tasksApi.delete(projectId, taskId)
     setTasks(tasks.filter((t) => t.id !== taskId))
   }
 
