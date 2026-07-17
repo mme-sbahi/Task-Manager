@@ -30,13 +30,22 @@ export interface User {
 }
 
 export interface Project {
-  id: number
+  id: string
   name: string
   description: string
-  progress: number
-  tasks: number
-  members: number
-  status: string
+  ownerId: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProjectMember {
+  id: string
+  email:string
+  projectId: string
+  userId: string
+  role: "OWNER" | "ADMIN" | "MEMBER"
+  createdAt: string
+  user: User
 }
 
 export interface Task {
@@ -49,13 +58,6 @@ export interface Task {
   status: string
 }
 
-export interface ProjectMember {
-  id: string
-  email: string
-  fullName: string
-  role: string
-  joinedAt: string
-}
 
 export interface DashboardStats {
   totalProjects: number
@@ -139,20 +141,9 @@ export const projects = {
 
   },
 
-  async get(id: number): Promise<Project> {
-    // TODO: Replace with real API call
-    // const res = await fetch(`/api/projects/${id}`)
-    // if (!res.ok) throw new Error('Project not found')
-    // return res.json()
-
-    const mock: Record<number, Project> = {
-      1: { id: 1, name: "Design System", description: "Component library and design tokens", progress: 80, tasks: 24, members: 4, status: "Active" },
-      2: { id: 2, name: "Mobile App v2", description: "React Native rewrite with new features", progress: 45, tasks: 36, members: 6, status: "In Progress" },
-      3: { id: 3, name: "API Gateway", description: "Unified API layer for microservices", progress: 90, tasks: 18, members: 3, status: "Active" },
-    }
-    const project = mock[id]
-    if (!project) throw new Error("Project not found")
-    return project
+  async get(id: string): Promise<Project> {
+    const res = await api.get(`/projects/${id}`)
+    return res.data
   },
 
   async create(data: Partial<Project>): Promise<Project> {
@@ -161,39 +152,21 @@ export const projects = {
       description: data.description
     })
     return res.data
-
-    return { id: Date.now(), ...data } as Project
   },
 
-  async update(id: number, data: Partial<Project>): Promise<Project> {
-    // TODO: Replace with real API call
-    // const res = await fetch(`/api/projects/${id}`, {
-    //   method: 'PATCH',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data),
-    // })
-    // if (!res.ok) throw new Error('Failed to update project')
-    // return res.json()
-
-    return { id, ...data } as Project
+  async update(id: string, data: Partial<Project>): Promise<Project> { 
+    const res = await api.patch(`/projects/${id}`, data)
+    return res.data
   },
 
-  async delete(id: number): Promise<void> {
-    // TODO: Replace with real API call
-    // await fetch(`/api/projects/${id}`, { method: 'DELETE' })
+  async delete(id: string): Promise<void> {
+    await api.delete(`/projects/${id}`)
   },
 
-  async listMembers(projectId: number): Promise<ProjectMember[]> {
-    // TODO: Replace with real API call
-    // const res = await fetch(`/api/projects/${projectId}/members`)
-    // if (!res.ok) throw new Error('Failed to fetch members')
-    // return res.json()
-
-    return [
-      { id: "1", email: "sahil@company.com", fullName: "Sahil A.", role: "Owner", joinedAt: "2026-01-15" },
-      { id: "2", email: "alice@company.com", fullName: "Alice Chen", role: "Admin", joinedAt: "2026-02-10" },
-      { id: "3", email: "bob@company.com", fullName: "Bob Martinez", role: "Member", joinedAt: "2026-03-05" },
-    ]
+  async listMembers(projectId: string): Promise<ProjectMember[]> {
+    const res = await api.get(`/projects/${projectId}/members`)
+    if (!res) throw new Error('Failed to fetch members')
+    return res.data
   },
 
   async inviteMember(projectId: number, email: string): Promise<void> {
@@ -205,9 +178,8 @@ export const projects = {
     // })
   },
 
-  async removeMember(projectId: number, memberId: string): Promise<void> {
-    // TODO: Replace with real API call
-    // await fetch(`/api/projects/${projectId}/members/${memberId}`, { method: 'DELETE' })
+  async removeMember(projectId: string, memberId: string): Promise<void> {
+    await api.delete(`/projects/${projectId}/members/${memberId}`)
   },
 }
 

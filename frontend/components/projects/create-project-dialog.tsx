@@ -17,12 +17,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Plus } from "lucide-react"
 import { projects as projectsApi, ProjectData } from "@/lib/api"
 import { getErrorMessage } from "@/lib/errors"
+import { toast } from "sonner"
 
 interface CreateProjectDialogProps {
   onCreate: (data: ProjectData) => void | Promise<void>
 }
 
-export function CreateProjectDialog({ onCreate }: CreateProjectDialogProps, setprojects: any) {
+export function CreateProjectDialog() {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
@@ -34,11 +35,11 @@ export function CreateProjectDialog({ onCreate }: CreateProjectDialogProps, setp
     if (!name.trim()) return
     setLoading(true)
     try {
-      const res = await projectsApi.create({ name, description })
+      await projectsApi.create({ name, description })
       setOpen(false)
       setName("")
       setDescription("")
-      setprojects((prev: any) => [res, ...prev]);
+      toast.success("Project created successfully! ")
     } catch(err) {
       setServerError(getErrorMessage(err))
     } finally {

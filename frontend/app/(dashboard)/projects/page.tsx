@@ -22,12 +22,12 @@ export default function ProjectsPage() {
     return matchesSearch && matchesFilter
   })
 
-  const handleCreateProject = async (data: ProjectData) => {
-    // TODO: Replace with real API call
-    // import { projects as projectsApi } from '@/lib/api'
-    // await projectsApi.create(data)
-    console.log("Create project:", data)
-  }
+  // const handleCreateProject = async (data: ProjectData) => {
+  //   // TODO: Replace with real API call
+  //   // import { projects as projectsApi } from '@/lib/api'
+  //   // await projectsApi.create(data)
+  //   console.log("Create project:", data)
+  // }
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -35,7 +35,7 @@ export default function ProjectsPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
           <p className="text-sm text-muted-foreground">Manage and track your team&apos;s projects</p>
         </div>
-        <CreateProjectDialog onCreate={handleCreateProject} setprojects={setProjects} />
+        <CreateProjectDialog />
       </div>
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
