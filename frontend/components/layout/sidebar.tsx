@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-import { clearAuthCookie } from "@/lib/auth-cookie"
+import { clearAuthTokens } from "@/lib/auth-cookie"
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -30,7 +30,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const router = useRouter()
 
   const handleLogout = () => {
-    clearAuthCookie()
+    clearAuthTokens()
     router.push("/login")
   }
 

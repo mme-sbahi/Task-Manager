@@ -1,20 +1,23 @@
 import Cookies from "js-cookie"
 
-const TOKEN_KEY = "taskflow_token"
+const ACCESS_TOKEN_KEY = "taskflow_access_token"
+const REFRESH_TOKEN_KEY = "taskflow_refresh_token"
 
-export function setAuthCookie(token: string) {
-  Cookies.set(TOKEN_KEY, token, {
-    expires: 7,
-    sameSite: "lax",
-    path: "/",
-    // TODO: Set secure: true in production (requires HTTPS)
-  })
+export function setAuthTokens(accessToken: string, refreshToken: string) {
+  // TODO: Set secure: true in production (requires HTTPS)
+  Cookies.set(ACCESS_TOKEN_KEY, accessToken, { expires: 1, sameSite: "lax", path: "/" })
+  Cookies.set(REFRESH_TOKEN_KEY, refreshToken, { expires: 7, sameSite: "lax", path: "/" })
 }
 
-export function clearAuthCookie() {
-  Cookies.remove(TOKEN_KEY, { path: "/" })
+export function clearAuthTokens() {
+  Cookies.remove(ACCESS_TOKEN_KEY, { path: "/" })
+  Cookies.remove(REFRESH_TOKEN_KEY, { path: "/" })
 }
 
-export function getAuthCookie(): string | undefined {
-  return Cookies.get(TOKEN_KEY)
+export function getAccessToken(): string | undefined {
+  return Cookies.get(ACCESS_TOKEN_KEY)
+}
+
+export function getRefreshToken(): string | undefined {
+  return Cookies.get(REFRESH_TOKEN_KEY)
 }

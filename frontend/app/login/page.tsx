@@ -7,44 +7,97 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { getErrorMessage } from "@/lib/errors"
 import { AlertCircle, Loader2, CheckSquare } from "lucide-react"
-import { setAuthCookie } from "@/lib/auth-cookie"
+import { z } from "zod"
+import { auth } from "@/lib/api"
+import { toast } from "sonner" // Changed from Toaster to toast
+import { Toaster } from "@/components/ui/sonner"
+
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email adress"),
+  password: z.string().min(8, "Password must be at least 8 chrachters")
+})
+
+type LoginForm = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [user, setUser] = useState<LoginForm>({
+    email:"",
+    password: ""
+  })
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<Partial<LoginForm>>({})
+  const [serverError, setServerError] = useState("")
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setUser(prev => ({ ...prev, [id]: value }))
+    if (error[id as keyof LoginForm]) {
+      setError(prev => ({ ...prev, [id]: undefined }))
+    }
+  }
+  
+    const handleBlur = (field: keyof LoginForm) => {
+      if (!user[field]) return
+      try {
+        const fieldSchema = loginSchema.pick({ [field]: true })
+        fieldSchema.parse({ [field]: user[field] })
+        setError(prev => ({ ...prev, [field]: undefined }))
+      } catch (err) {
+        if (err instanceof z.ZodError) {
+          setError(prev => ({ ...prev, [field]: err.errors[0].message }))
+        }
+      }
+    }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    setServerError("")
+    setError({})
 
-    // TODO: Replace with real API call
-    // import { auth } from '@/lib/api'
-    // try {
-    //   const { user, token } = await auth.login(email, password)
-    //   setAuthCookie(token)
-    //   router.push('/dashboard')
-    // } catch (err) {
-    //   setError(err instanceof Error ? err.message : 'Invalid email or password')
-    // } finally {
-    //   setIsLoading(false)
-    // }
+    try {
+      loginSchema.parse(user)
+    } catch (error) {
+          if (error instanceof z.ZodError) {
+            const newErrors: Partial<LoginForm> = {}
+            error.errors.forEach((err) => {
+              const path = err.path[0]
+              if (typeof path === "string") {
+                newErrors[path as keyof LoginForm] = err.message
+              }
+            })
+            setError(newErrors)
+            return
+          }
+        }
 
-    // Mock auth for UI demo
-    setTimeout(() => {
-      const mockToken = "mock-token-" + Math.random().toString(36).substring(2)
-      setAuthCookie(mockToken)
-      setIsLoading(false)
-      router.push("/dashboard")
-    }, 800)
+        setIsLoading(true)
+
+        try {
+          await auth.login(user.email, user.password)
+          
+          // Show success toast
+          toast.success("Welcome back! 🎉", {
+            description: "You have been successfully signed in.",
+            duration: 4000,
+          })
+          
+          router.push("/dashboard")
+
+        } catch(err) {
+          setServerError(getErrorMessage(err))
+        } finally {
+        setIsLoading(false)
+        }
+         
   }
 
   return (
     <div className="flex min-h-screen">
+      {/* Add Toaster component here */}
+      <Toaster position="top-right" richColors />
+      
       {/* Left brand panel */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent" />
@@ -81,22 +134,22 @@ export default function LoginPage() {
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Sign in to your account to continue</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
+            {serverError && (
               <div className="flex items-start gap-2.5 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/50 px-3.5 py-3 text-sm text-red-700 dark:text-red-400">
                 <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{error}</span>
+                <span>{serverError}</span>
               </div>
             )}
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} autoComplete="email" className="h-10" />
+              <Input id="email" type="email" placeholder="name@company.com" value={user.email} onChange={handleChange} onBlur={() => handleBlur("email")} required disabled={isLoading} className="h-10" />
             </div>
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
                 <Link href="#" className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">Forgot password?</Link>
               </div>
-              <Input id="password" type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} autoComplete="current-password" className="h-10" />
+              <Input id="password" type="password" placeholder="Enter your password" value={user.password} onChange={handleChange} onBlur={() => handleBlur("password")} required disabled={isLoading} className="h-10" />
             </div>
             <Button type="submit" className="w-full h-10" disabled={isLoading}>
               {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
