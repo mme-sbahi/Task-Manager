@@ -1,5 +1,5 @@
 /* ============================================================
- * API Service — TaskFlow
+* API Service — TaskFlow
  *
  * All backend API calls go through this module.
  * Each function is a placeholder — replace the mock implementation
@@ -14,12 +14,19 @@
 // Types
 // ------------------------------------------------------------------
 
+
+import { api } from "@/lib/axios"
+import { setAuthTokens, clearAuthTokens } from "@/lib/auth-cookie"
+
 export interface User {
   id: string
-  name: string
   email: string
-  role: string
-  avatarInitials: string
+  fullName: string
+  role?: string
+  avatarUrl?: string
+  avatarInitials?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Project {
@@ -67,64 +74,21 @@ export interface PasswordData {
 // ------------------------------------------------------------------
 
 export const auth = {
-  async login(email: string, password: string): Promise<{ user: User; token: string }> {
-    // TODO: Replace with real API call
-    // const res = await fetch('/api/auth/login', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email, password }),
-    // })
-    // if (!res.ok) throw new Error(await res.text())
-    // return res.json()
-
-    return {
-      user: {
-        id: "1",
-        name: email.split("@")[0].replace(/[.-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-        email,
-        role: "Product Designer",
-        avatarInitials: email
-          .split("@")[0]
-          .split(/[.\s_-]/)
-          .map((s) => s[0])
-          .join("")
-          .toUpperCase()
-          .slice(0, 2),
-      },
-      token: "mock-token-" + Math.random().toString(36).substring(2),
-    }
+  async login(email: string, password: string): Promise<{ user: User }> {
+    const { data } = await api.post("/auth/login", { email, password })
+    setAuthTokens(data.accessToken, data.refreshToken)
+    return { user: data.user }
   },
 
-  async register(name: string, email: string, password: string): Promise<{ user: User; token: string }> {
-    // TODO: Replace with real API call
-    // const res = await fetch('/api/auth/register', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ name, email, password }),
-    // })
-    // if (!res.ok) throw new Error(await res.text())
-    // return res.json()
-
-    return {
-      user: {
-        id: Date.now().toString(),
-        name,
-        email,
-        role: "Member",
-        avatarInitials: name
-          .split(" ")
-          .map((s) => s[0])
-          .join("")
-          .toUpperCase()
-          .slice(0, 2),
-      },
-      token: "mock-token-" + Math.random().toString(36).substring(2),
-    }
+  async register(fullName: string, email: string, password: string): Promise<{ user: User }> {
+    const { data } = await api.post("/auth/register", { fullName, email, password })
+    setAuthTokens(data.accessToken, data.refreshToken)
+    return { user: data.user }
   },
 
   async logout(): Promise<void> {
-    // TODO: Replace with real API call
-    // await fetch('/api/auth/logout', { method: 'POST' })
+    await api.post("/auth/logout")
+    clearAuthTokens()
   },
 }
 
@@ -293,9 +257,11 @@ export const settings = {
 
     return {
       id: "1",
-      name: data.name,
+      fullName: data.name,
       email: data.email,
       role: "Product Designer",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       avatarInitials: data.name
         .split(" ")
         .map((s) => s[0])

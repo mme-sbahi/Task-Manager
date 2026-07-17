@@ -11,7 +11,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { clearAuthCookie } from "@/lib/auth-cookie"
+import { clearAuthTokens } from "@/lib/auth-cookie"
 
 interface TopNavProps {
   onMenuToggle: () => void
@@ -23,7 +23,7 @@ export function TopNav({ onMenuToggle }: TopNavProps) {
   const [searchQuery, setSearchQuery] = useState("")
 
   const handleLogout = () => {
-    clearAuthCookie()
+    clearAuthTokens()
     router.push("/login")
   }
 

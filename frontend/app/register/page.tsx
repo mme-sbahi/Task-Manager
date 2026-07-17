@@ -3,59 +3,98 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { AlertCircle, Loader2, CheckSquare } from "lucide-react"
-import { setAuthCookie } from "@/lib/auth-cookie"
+import { auth } from "@/lib/api"
+import { getErrorMessage } from "@/lib/errors"
+import { Toaster } from "@/components/ui/sonner"
+
+const registerSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"]
+})
+
+type RegisterForm = z.infer<typeof registerSchema>
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+
+  const [user, setUser] = useState<RegisterForm>({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  })
+
+  const [errors, setErrors] = useState<Partial<RegisterForm>>({})
+  const [serverError, setServerError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setUser(prev => ({ ...prev, [id]: value }))
+    if (errors[id as keyof RegisterForm]) {
+      setErrors(prev => ({ ...prev, [id]: undefined }))
+    }
+  }
+
+  const handleBlur = (field: keyof RegisterForm) => {
+    if (!user[field]) return
+    try {
+      registerSchema.shape[field].parse(user[field])
+      setErrors(prev => ({ ...prev, [field]: undefined }))
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        setErrors(prev => ({ ...prev, [field]: err.issues[0].message }))
+      }
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      return
+    setServerError("")
+    setErrors({})
+
+    try {
+      registerSchema.parse(user)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Partial<RegisterForm> = {}
+        error.issues.forEach((err) => {
+          const path = err.path[0]
+          if (typeof path === "string") {
+            newErrors[path as keyof RegisterForm] = err.message
+          }
+        })
+        setErrors(newErrors)
+        return
+      }
     }
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters")
-      return
-    }
+
     setIsLoading(true)
 
-    // TODO: Replace with real API call
-    // import { auth } from '@/lib/api'
-    // try {
-    //   const { user, token } = await auth.register(name, email, password)
-    //   setAuthCookie(token)
-    //   router.push('/dashboard')
-    // } catch (err) {
-    //   setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
-    // } finally {
-    //   setIsLoading(false)
-    // }
-
-    // Mock auth for UI demo
-    setTimeout(() => {
-      const mockToken = "mock-token-" + Math.random().toString(36).substring(2)
-      setAuthCookie(mockToken)
-      setIsLoading(false)
+    try {
+      await auth.register(user.name, user.email, user.password)
       router.push("/dashboard")
-    }, 800)
+    } catch (err) {
+      setServerError(getErrorMessage(err))
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="flex min-h-screen">
-      {/* Left brand panel */}
+      <Toaster position="top-right" richColors />
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:48px_48px]" />
@@ -77,7 +116,6 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Right form panel */}
       <div className="flex-1 flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 px-4 py-12">
         <div className="w-full max-w-sm mx-auto">
           <div className="lg:hidden flex justify-center mb-8">
@@ -86,38 +124,85 @@ export default function RegisterPage() {
               <span className="text-sm font-semibold">TaskFlow</span>
             </div>
           </div>
+
           <div className="mb-8">
             <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Get started with TaskFlow in minutes</p>
           </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
+            {serverError && (
               <div className="flex items-start gap-2.5 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/50 px-3.5 py-3 text-sm text-red-700 dark:text-red-400">
                 <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{error}</span>
+                <span>{serverError}</span>
               </div>
             )}
+
             <div className="space-y-1.5">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required disabled={isLoading} autoComplete="name" className="h-10" />
+              <Input
+                id="name"
+                placeholder="John Doe"
+                value={user.name}
+                onChange={handleChange}
+                onBlur={() => handleBlur("name")}
+                disabled={isLoading}
+                className="h-10"
+              />
+              {errors.name && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.name}</p>}
             </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} autoComplete="email" className="h-10" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@company.com"
+                value={user.email}
+                onChange={handleChange}
+                onBlur={() => handleBlur("email")}
+                disabled={isLoading}
+                className="h-10"
+              />
+              {errors.email && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.email}</p>}
             </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="At least 8 characters" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} autoComplete="new-password" className="h-10" />
+              <Input
+                id="password"
+                type="password"
+                placeholder="At least 8 characters"
+                value={user.password}
+                onChange={handleChange}
+                onBlur={() => handleBlur("password")}
+                disabled={isLoading}
+                className="h-10"
+              />
+              {errors.password && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.password}</p>}
             </div>
+
             <div className="space-y-1.5">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input id="confirm-password" type="password" placeholder="Re-enter your password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={isLoading} autoComplete="new-password" className="h-10" />
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Re-enter your password"
+                value={user.confirmPassword}
+                onChange={handleChange}
+                onBlur={() => handleBlur("confirmPassword")}
+                disabled={isLoading}
+                className="h-10"
+              />
+              {errors.confirmPassword && <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.confirmPassword}</p>}
             </div>
+
             <Button type="submit" className="w-full h-10" disabled={isLoading}>
               {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
               {isLoading ? "Creating account..." : "Create account"}
             </Button>
           </form>
+
           <div className="mt-6">
             <div className="relative mb-5">
               <div className="absolute inset-0 flex items-center"><Separator /></div>
@@ -136,6 +221,7 @@ export default function RegisterPage() {
               </Button>
             </div>
           </div>
+
           <p className="mt-8 text-center text-sm text-zinc-500">
             Already have an account?{" "}
             <Link href="/login" className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline">Sign in</Link>
