@@ -113,20 +113,9 @@ export const auth = {
 
 export const dashboard = {
   async getStats(): Promise<DashboardStats> {
-    // TODO: Replace with real API call
-    // const res = await fetch('/api/dashboard/stats')
-    // if (!res.ok) throw new Error('Failed to fetch dashboard stats')
-    // return res.json()
-
-    return {
-      totalProjects: 12,
-      totalTasks: 143,
-      tasksCompleted: 87,
-      tasksInProgress: 42,
-      tasksDueToday: 8,
-      overdueCount: 3,
-    }
-  },
+    const { data } = await api.get("/dashboard/stats")
+  return data
+}
 }
 
 // ------------------------------------------------------------------

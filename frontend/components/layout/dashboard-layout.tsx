@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ThemeProvider } from "next-themes"
+import { ThemeProvider } from "@/components/ThemProvider"
 import { Sidebar } from "@/components/layout/sidebar"
 import { TopNav } from "@/components/layout/top-nav"
 import { Sheet, SheetContent } from "@/components/ui/sheet"

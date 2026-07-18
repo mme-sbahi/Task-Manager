@@ -96,6 +96,22 @@ describe('TasksService', () => {
     });
   });
 
+  describe('findAssignedToUser', () => {
+    it('returns tasks assigned to the given user, ordered by due date', async () => {
+      (tasksRepo.find as jest.Mock).mockResolvedValue([{ id: 'task-1' }]);
+
+      const result = await service.findAssignedToUser('user-1');
+
+      expect(tasksRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { assigneeId: 'user-1' },
+          order: { dueDate: 'ASC' },
+        }),
+      );
+      expect(result).toEqual([{ id: 'task-1' }]);
+    });
+  });
+
   describe('remove', () => {
     it('removes an existing task', async () => {
       (tasksRepo.findOne as jest.Mock).mockResolvedValue({ id: 'task-1' });

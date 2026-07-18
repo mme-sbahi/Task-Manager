@@ -16,6 +16,7 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { AddMemberDto } from './dto/add-member.dto';
+import { InviteMembersDto } from './dto/invite-members.dto';
 import { ProjectMemberGuard } from './guards/project-member.guard';
 import { ProjectOwnerGuard } from './guards/project-owner.guard';
 
@@ -74,6 +75,22 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Invite a member by email (must be OWNER or ADMIN)' })
   addMember(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AddMemberDto) {
     return this.projectsService.addMember(id, dto);
+  }
+
+  @UseGuards(ProjectMemberGuard, ProjectOwnerGuard)
+  @Post(':id/members/invite')
+  @ApiOperation({
+    summary: 'Invite multiple people at once by email (must be OWNER or ADMIN)',
+    description:
+      'Attempts every email independently — one failure (unregistered ' +
+      'email, already a member) does not block the rest. Returns a summary ' +
+      'of who was invited and who failed, with a reason for each failure.',
+  })
+  inviteMembers(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: InviteMembersDto,
+  ) {
+    return this.projectsService.inviteMembers(id, dto);
   }
 
   @UseGuards(ProjectMemberGuard, ProjectOwnerGuard)

@@ -102,6 +102,30 @@ describe('ProjectsService', () => {
     });
   });
 
+  describe('inviteMembers', () => {
+    it('invites every valid email and reports failures separately, without stopping the batch', async () => {
+      usersService.findByEmail.mockImplementation((email: string) => {
+        if (email === 'ghost@example.com') return Promise.resolve(null);
+        return Promise.resolve({ id: `user-${email}` });
+      });
+      (membersRepo.findOne as jest.Mock).mockImplementation(({ where }) =>
+        where.userId === 'user-already@example.com'
+          ? Promise.resolve({ id: 'existing-membership' })
+          : Promise.resolve(null),
+      );
+
+      const result = await service.inviteMembers('project-1', {
+        emails: ['good@example.com', 'ghost@example.com', 'already@example.com'],
+      });
+
+      expect(result.invited).toHaveLength(1);
+      expect(result.failed).toHaveLength(2);
+      expect(result.failed.map((f) => f.email)).toEqual(
+        expect.arrayContaining(['ghost@example.com', 'already@example.com']),
+      );
+    });
+  });
+
   describe('removeMember', () => {
     it('throws NotFoundException when the membership does not exist', async () => {
       (membersRepo.findOne as jest.Mock).mockResolvedValue(null);
