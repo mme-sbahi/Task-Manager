@@ -63,7 +63,7 @@ export default function ProjectDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
 
-  const [inviteEmail, setInviteEmail] = useState("")
+  const [inviteEmails, setInviteEmails] = useState("")
 
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -103,17 +103,20 @@ export default function ProjectDetailPage() {
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!inviteEmail.trim()) return
+    const emails = inviteEmails
+      .split(/[\n,]+/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+    if (emails.length === 0) return
     setInviting(true)
     try {
       // TODO: Replace with real API call
-      // import { projects } from '@/lib/api'
-      // await projects.inviteMember(Number(params.id), inviteEmail.trim())
-      toast.success(`Invitation sent to ${inviteEmail}`)
-      setInviteEmail("")
+      // for (const email of emails) { await projects.inviteMember(projectId, email) }
+      toast.success(`Invitations sent to ${emails.length} email(s)`)
+      setInviteEmails("")
       setInviteOpen(false)
     } catch {
-      toast.error("Failed to send invitation")
+      toast.error("Failed to send invitations")
     } finally {
       setInviting(false)
     }
@@ -230,20 +233,21 @@ export default function ProjectDetailPage() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="invite-email">Email address</Label>
-                    <Input
-                      id="invite-email"
-                      type="email"
-                      placeholder="colleague@company.com"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
+                    <Label htmlFor="invite-emails">Email addresses</Label>
+                    <Textarea
+                      id="invite-emails"
+                      placeholder="colleague@company.com, other@company.com"
+                      value={inviteEmails}
+                      onChange={(e) => setInviteEmails(e.target.value)}
+                      rows={3}
                       required
                     />
+                    <p className="text-xs text-muted-foreground">Separate multiple emails with commas or new lines.</p>
                   </div>
                 </div>
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
-                  <Button type="submit" disabled={inviting || !inviteEmail.trim()}>
+                  <Button type="submit" disabled={inviting || !inviteEmails.trim()}>
                     {inviting ? "Sending..." : "Send Invite"}
                   </Button>
                 </DialogFooter>

@@ -12,11 +12,11 @@ import { getErrorMessage } from "@/lib/errors"
 
 
 const columns = [
-  { id: "todo", title: "Todo", color: "bg-muted-foreground" },
-  { id: "in-progress", title: "In Progress", color: "bg-blue-500" },
-  { id: "review", title: "Review", color: "bg-amber-500" },
-  { id: "done", title: "Done", color: "bg-emerald-500" },
-]
+  { id: "TODO", title: "Todo", color: "bg-muted-foreground" },
+  { id: "IN_PROGRESS", title: "In Progress", color: "bg-blue-500" },
+  { id: "REVIEW", title: "Review", color: "bg-amber-500" },
+  { id: "DONE", title: "Done", color: "bg-emerald-500" },
+];
 
 
 
@@ -30,19 +30,49 @@ export function KanbanBoard(projectId: any) {
   const handleEdit = (task: Task) => { setEditingTask(task); setModalOpen(true) }
   const handleSave = async (data: Partial<Task>) => {
     try {
-      if (editingTask) { await tasksApi.update(projectId.projectId, editingTask.id, data) }
-      else { await tasksApi.create(projectId.projectId, data) }
-      setModalOpen(false)
-      setEditingTask(null)
-
-    } catch (err){
-      toast.error(getErrorMessage(err))
+      let savedTask: Task;
+  
+      if (editingTask) {
+        savedTask = await tasksApi.update(
+          projectId.projectId,
+          editingTask.id,
+          data
+        );
+  
+        setTasks(prev =>
+          prev.map(task =>
+            task.id === savedTask.id ? savedTask : task
+          )
+        );
+      } else {
+        savedTask = await tasksApi.create(
+          projectId.projectId,
+          data
+        );
+  
+        setTasks(prev => [...prev, savedTask]);
+      }
+  
+      setModalOpen(false);
+      setEditingTask(null);
+  
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     }
-  }
+  };
   const handleDelete = async (taskId: number) => {
-    await tasksApi.delete(projectId.projectId, taskId)
-    setTasks(tasks.filter((t) => t.id !== taskId))
-  }
+    try {
+      await tasksApi.delete(projectId.projectId, taskId);
+  
+      setTasks(prev =>
+        prev.filter(task => task.id !== taskId)
+      );
+  
+      toast.success("Task deleted");
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  };
 
   return (
     <div className="space-y-4">

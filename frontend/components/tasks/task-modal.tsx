@@ -11,7 +11,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { tasks as tasksApi, Task } from '@/lib/api'
+import { tasks as tasksApi, Task, projects, ProjectMember } from '@/lib/api'
 
 
 export function TaskModal({ projectId, open, onOpenChange, task, onSave }: {projectId:string; 
@@ -20,25 +20,49 @@ export function TaskModal({ projectId, open, onOpenChange, task, onSave }: {proj
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [status, setStatus] = useState("todo")
-  const [priority, setPriority] = useState<"urgent" | "high" | "medium" | "low">("medium")
+  const [priority, setPriority] = useState<"high" | "medium" | "low">("medium")
   const [dueDate, setDueDate] = useState("")
-  const [assignee, setAssignee] = useState("")
+  const [assigneeId, setAssigneeId] = useState("");
+
+  const [members, setMembers] = useState<ProjectMember[]>([])
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      const data = await projects.listMembers(projectId);
+      console.log("API returned:", data);
+      setMembers(data);
+    };
+  
+    fetchMembers();
+  }, [projectId]);
+  
+  useEffect(() => {
+    console.log("members state:", members);
+  }, [members]);
 
   useEffect(() => {
     if (task) {
       setTitle(task.title); setDescription(task.description); setStatus(task.status)
-      setPriority(task.priority); setDueDate(task.dueDate); setAssignee(task.assignee)
+      setPriority(task.priority); setDueDate(task.dueDate); setAssigneeId(task.assigneeId)
     } else {
-      setTitle(""); setDescription(""); setStatus("todo"); setPriority("medium"); setDueDate(""); setAssignee("")
+      setTitle(""); setDescription(""); setStatus("todo"); setPriority("medium"); setDueDate(""); setAssigneeId("")
     }
   }, [task, open])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (task) { await tasksApi.update(projectId, task.id, { title, description, status, priority, dueDate, assignee }) }
-    else { await tasksApi.create(projectId,{ title, description, status, priority, dueDate, assignee }) }
-    onSave({ title, description, status, priority, dueDate, assignee })
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    onSave({
+      title,
+      description,
+      status: status.toUpperCase(),
+      priority: priority.toUpperCase(),
+      dueDate: dueDate
+        ? new Date(dueDate).toISOString()
+        : undefined,
+      assigneeId: assigneeId || undefined,
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -61,7 +85,7 @@ export function TaskModal({ projectId, open, onOpenChange, task, onSave }: {proj
                   <SelectTrigger id="task-status"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todo">Todo</SelectItem>
-                    <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="review">Review</SelectItem>
                     <SelectItem value="done">Done</SelectItem>
                   </SelectContent>
@@ -69,10 +93,9 @@ export function TaskModal({ projectId, open, onOpenChange, task, onSave }: {proj
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="task-priority">Priority</Label>
-                <Select value={priority} onValueChange={(v) => setPriority(v as "urgent" | "high" | "medium" | "low")}>
+                <Select value={priority} onValueChange={(v) => setPriority(v as "high" | "medium" | "low")}>
                   <SelectTrigger id="task-priority"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="urgent">Urgent</SelectItem>
                     <SelectItem value="high">High</SelectItem>
                     <SelectItem value="medium">Medium</SelectItem>
                     <SelectItem value="low">Low</SelectItem>
@@ -87,15 +110,25 @@ export function TaskModal({ projectId, open, onOpenChange, task, onSave }: {proj
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="task-assignee">Assignee</Label>
-                <Select value={assignee} onValueChange={setAssignee}>
-                  <SelectTrigger id="task-assignee"><SelectValue placeholder="Assign to" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="SA">Sahil A.</SelectItem>
-                    <SelectItem value="MK">Maya K.</SelectItem>
-                    <SelectItem value="AL">Alex L.</SelectItem>
-                    <SelectItem value="JD">Jordan D.</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Select
+    value={assigneeId}
+    onValueChange={setAssigneeId}
+>
+    <SelectTrigger>
+        <SelectValue placeholder="Assign to" />
+    </SelectTrigger>
+
+    <SelectContent>
+        {members.map(member => (
+            <SelectItem
+                key={member.id}
+                value={member.userId} 
+            >
+                {member.user.fullName}
+            </SelectItem>
+        ))}
+    </SelectContent>
+</Select>
               </div>
             </div>
           </div>

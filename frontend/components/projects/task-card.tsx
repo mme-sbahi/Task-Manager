@@ -8,18 +8,14 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog"
+import { Task } from "@/lib/api"
 
-interface Task {
-  id: number; title: string; description: string; priority: "urgent" | "high" | "medium" | "low"
-  dueDate: string; assignee: string; status: string
-}
 
 const priorityConfig = {
-  urgent: { label: "Urgent", variant: "destructive" as const },
-  high: { label: "High", variant: "warning" as const },
-  medium: { label: "Medium", variant: "default" as const },
-  low: { label: "Low", variant: "secondary" as const },
-}
+  HIGH: { label: "High", variant: "warning" as const },
+  MEDIUM: { label: "Medium", variant: "default" as const },
+  LOW: { label: "Low", variant: "secondary" as const },
+};
 
 export function TaskCard({ task, onEdit, onDelete }: { task: Task; onEdit: () => void; onDelete: () => void }) {
   const config = priorityConfig[task.priority]
@@ -58,7 +54,7 @@ export function TaskCard({ task, onEdit, onDelete }: { task: Task; onEdit: () =>
             <Badge variant={config.variant} className="text-[10px] px-1.5 py-0">{config.label}</Badge>
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-muted-foreground">{task.dueDate}</span>
-              <Avatar className="h-5 w-5"><AvatarFallback className="text-[8px]">{task.assignee}</AvatarFallback></Avatar>
+              {/* <Avatar className="h-5 w-5"><AvatarFallback className="text-[8px]">{task.assignee}</AvatarFallback></Avatar> */}
             </div>
           </div>
         </div>
