@@ -15,7 +15,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      <body className="min-h-screen"> <QueryProvider>{children} <Toaster /> </QueryProvider> </body>
+      <body className="min-h-screen">
+        <QueryProvider>
+          {children} <Toaster />
+          </QueryProvider>
+           </body>
     </html>
   )
 }

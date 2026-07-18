@@ -11,6 +11,7 @@ import { ProjectRole } from './enums/project-role.enum';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { AddMemberDto } from './dto/add-member.dto';
+import { InviteMembersDto } from './dto/invite-members.dto';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -82,9 +83,45 @@ export class ProjectsService {
   }
 
   async addMember(projectId: string, dto: AddMemberDto): Promise<ProjectMember> {
-    const user = await this.usersService.findByEmail(dto.email);
+    return this.addSingleMember(projectId, dto.email, dto.role);
+  }
+
+  // Invites several people at once. One bad email (not registered,
+  // already a member) shouldn't fail the whole batch — each is attempted
+  // independently and the caller gets a clear summary of what happened.
+  async inviteMembers(
+    projectId: string,
+    dto: InviteMembersDto,
+  ): Promise<{
+    invited: ProjectMember[];
+    failed: { email: string; reason: string }[];
+  }> {
+    const invited: ProjectMember[] = [];
+    const failed: { email: string; reason: string }[] = [];
+
+    for (const email of dto.emails) {
+      try {
+        const member = await this.addSingleMember(projectId, email, dto.role);
+        invited.push(member);
+      } catch (err) {
+        failed.push({
+          email,
+          reason: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    }
+
+    return { invited, failed };
+  }
+
+  private async addSingleMember(
+    projectId: string,
+    email: string,
+    role?: ProjectRole,
+  ): Promise<ProjectMember> {
+    const user = await this.usersService.findByEmail(email);
     if (!user) {
-      throw new NotFoundException(`No user found with email ${dto.email}`);
+      throw new NotFoundException(`No user found with email ${email}`);
     }
 
     const existing = await this.membersRepository.findOne({
@@ -97,7 +134,7 @@ export class ProjectsService {
     const member = this.membersRepository.create({
       projectId,
       userId: user.id,
-      role: dto.role ?? ProjectRole.MEMBER,
+      role: role ?? ProjectRole.MEMBER,
     });
     return this.membersRepository.save(member);
   }

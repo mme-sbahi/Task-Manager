@@ -5,6 +5,7 @@ import { AuthModule } from '../src/auth/auth.module';
 import { UsersModule } from '../src/users/users.module';
 import { ProjectsModule } from '../src/projects/projects.module';
 import { TasksModule } from '../src/tasks/tasks.module';
+import { DashboardModule } from '../src/dashboard/dashboard.module';
 
 // Mirrors AppModule, but points at a dedicated `taskflow_test` database
 // (see .env.test) so e2e runs never touch your dev data. Every run drops
@@ -32,6 +33,7 @@ import { TasksModule } from '../src/tasks/tasks.module';
     UsersModule,
     ProjectsModule,
     TasksModule,
+    DashboardModule,
   ],
 })
 export class TestAppModule {}

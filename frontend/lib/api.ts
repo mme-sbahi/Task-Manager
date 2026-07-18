@@ -123,7 +123,7 @@ export const auth = {
 
 export const dashboard = {
   async getStats(): Promise<DashboardStats> {
-   const { data } = await api.get("/dashboard/stats")
+    const { data } = await api.get("/dashboard/stats")
   return data
 }
 }
@@ -193,20 +193,8 @@ export const tasks = {
   },
 
   async listMyTasks(): Promise<Task[]> {
-    // TODO: Replace with real API call when endpoint exists
-    // const res = await api.get('/tasks/mine')
-    // return res.data
-
-    return [
-      { id: 1, title: "Design system color tokens", description: "Update color palette in design tokens", priority: "HIGH", dueDate: "2026-07-20", status: "IN_PROGRESS" },
-      { id: 2, title: "API rate limiting", description: "Implement rate limiting middleware", priority: "URGENT", dueDate: "2026-07-18", status: "TODO" },
-      { id: 3, title: "User onboarding flow", description: "Redesign the onboarding experience", priority: "MEDIUM", dueDate: "2026-07-22", status: "IN_PROGRESS" },
-      { id: 4, title: "Database migration script", description: "Write migration for v2 schema", priority: "HIGH", dueDate: "2026-07-17", status: "REVIEW" },
-      { id: 5, title: "Mobile responsive nav", description: "Make navigation responsive on mobile", priority: "LOW", dueDate: "2026-07-25", status: "DONE" },
-      { id: 6, title: "Dark mode support", description: "Add dark mode theme support", priority: "MEDIUM", dueDate: "2026-07-19", status: "IN_PROGRESS" },
-      { id: 7, title: "Write unit tests for auth", description: "Cover login, register, refresh flows", priority: "HIGH", dueDate: "2026-07-21", status: "TODO" },
-      { id: 8, title: "Set up CI/CD pipeline", description: "GitHub Actions workflow for deploy", priority: "MEDIUM", dueDate: "2026-07-23", status: "TODO" },
-    ]
+    const res = await api.get('/tasks/me')
+    return res.data
   },
 
   async create(projectId: string, data: Partial<Task>): Promise<Task> {
