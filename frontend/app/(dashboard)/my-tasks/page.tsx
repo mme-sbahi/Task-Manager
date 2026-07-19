@@ -42,6 +42,7 @@ export default function MyTasksPage() {
 
   useEffect(() => {
     tasks.listMyTasks().then(setTaskList).finally(() => setLoading(false))
+
   }, [])
 
   const filtered = [...taskList]

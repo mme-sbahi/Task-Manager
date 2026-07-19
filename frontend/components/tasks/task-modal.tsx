@@ -43,27 +43,31 @@ export function TaskModal({ projectId, open, onOpenChange, task, onSave }: {proj
   useEffect(() => {
     if (task) {
       setTitle(task.title); setDescription(task.description); setStatus(task.status)
-      setPriority(task.priority); setDueDate(task.dueDate); setAssigneeId(task.assigneeId)
+      setPriority(task.priority); setDueDate(task.dueDate ? task.dueDate.split('T')[0] : ''); setAssigneeId(task.assigneeId)
     } else {
       setTitle(""); setDescription(""); setStatus("todo"); setPriority("medium"); setDueDate(""); setAssigneeId("")
     }
   }, [task, open])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-  
-    onSave({
-      title,
-      description,
-      status: status.toUpperCase(),
-      priority: priority.toUpperCase(),
-      dueDate: dueDate
-        ? new Date(dueDate).toISOString()
-        : undefined,
-      assigneeId: assigneeId || undefined,
-    });
-  };
+ const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
 
+  onSave({
+    title,
+    description,
+    status: status.toUpperCase(),
+    priority: priority.toUpperCase(),
+    // Send YYYY-MM-DD, or today's date in LOCAL timezone (not UTC)
+    dueDate: dueDate || new Date().toLocaleDateString('en-CA'),  // "2026-07-19" in local time
+    assigneeId: assigneeId || undefined,
+  });
+};
+
+const formatDisplayDate = (isoDate: string) => {
+  if (!isoDate) return 'No due date';
+  const [y, m, d] = isoDate.split('T')[0].split('-').map(Number);
+  return `${m}/${d}/${y}`;  // 2/7/2026
+};
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">

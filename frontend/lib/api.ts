@@ -36,6 +36,8 @@ export interface Project {
   ownerId: string
   createdAt: string
   updatedAt: string
+  taskCount?: number
+  memberCount?: number
 }
 
 export interface ProjectMember {
@@ -194,6 +196,7 @@ export const tasks = {
 
   async listMyTasks(): Promise<Task[]> {
     const res = await api.get('/tasks/me')
+        console.log("my tasksssss", res.data);
     return res.data
   },
 

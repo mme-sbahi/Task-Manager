@@ -46,6 +46,48 @@ describe('ProjectsService', () => {
 
   afterEach(() => jest.clearAllMocks());
 
+  describe('findOne', () => {
+    it('maps memberCount and taskCount from loadRelationCountAndMap', async () => {
+      const queryBuilder = {
+        loadRelationCountAndMap: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue({
+          id: 'project-1',
+          name: 'Leet Recruitment Project',
+          memberCount: 3,
+          taskCount: 12,
+        }),
+      };
+      (projectsRepo.createQueryBuilder as jest.Mock).mockReturnValue(queryBuilder);
+
+      const project = await service.findOne('project-1');
+
+      expect(queryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
+        'project.memberCount',
+        'project.members',
+      );
+      expect(queryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
+        'project.taskCount',
+        'project.tasks',
+      );
+      expect(project.memberCount).toBe(3);
+      expect(project.taskCount).toBe(12);
+    });
+
+    it('throws NotFoundException when the project does not exist', async () => {
+      const queryBuilder = {
+        loadRelationCountAndMap: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(null),
+      };
+      (projectsRepo.createQueryBuilder as jest.Mock).mockReturnValue(queryBuilder);
+
+      await expect(service.findOne('missing-id')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
   describe('create', () => {
     it('creates the project and an OWNER membership row for the creator', async () => {
       (projectsRepo.save as jest.Mock).mockResolvedValue({

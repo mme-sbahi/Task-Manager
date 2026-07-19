@@ -19,7 +19,11 @@ const priorityConfig = {
 
 export function TaskCard({ task, onEdit, onDelete }: { task: Task; onEdit: () => void; onDelete: () => void }) {
   const config = priorityConfig[task.priority]
-
+  const formatDisplayDate = (isoDate: string) => {
+  if (!isoDate) return 'No due date';
+  const [y, m, d] = isoDate.split('T')[0].split('-').map(Number);
+  return `${m}/${d}/${y}`;  // 2/7/2026
+};
   return (
     <Card className="group">
       <CardContent className="p-3">
@@ -53,7 +57,7 @@ export function TaskCard({ task, onEdit, onDelete }: { task: Task; onEdit: () =>
           <div className="flex items-center justify-between gap-2">
             <Badge variant={config.variant} className="text-[10px] px-1.5 py-0">{config.label}</Badge>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-muted-foreground">{task.dueDate}</span>
+              <span className="text-[10px] text-muted-foreground">{formatDisplayDate(task.dueDate)}</span>
               {/* <Avatar className="h-5 w-5"><AvatarFallback className="text-[8px]">{task.assignee}</AvatarFallback></Avatar> */}
             </div>
           </div>

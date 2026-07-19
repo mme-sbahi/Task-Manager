@@ -17,7 +17,7 @@ const navItems = [
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/my-tasks", label: "My Tasks", icon: ListChecks },
   { href: "/calendar", label: "Calendar", icon: Calendar },
-  { href: "/settings", label: "Settings", icon: Settings },
+  // { href: "/settings", label: "Settings", icon: Settings },
 ]
 
 interface SidebarProps {
@@ -80,7 +80,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           {!collapsed && (
             <div className="flex-1 overflow-hidden">
               <p className="text-sm font-medium text-sidebar-foreground truncate">Sahil A.</p>
-              <p className="text-xs text-muted-foreground truncate">Product Designer</p>
             </div>
           )}
         </div>

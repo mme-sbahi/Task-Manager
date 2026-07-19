@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { tasks, type Task } from "@/lib/api"
+import { tasks, Task } from "@/lib/api"
 
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
@@ -22,7 +22,11 @@ export default function CalendarPage() {
   const month = currentDate.getMonth()
 
   useEffect(() => {
-    tasks.listMyTasks().then(setTaskList).finally(() => setLoading(false))
+    tasks.listMyTasks()
+      .then(data => {
+        setTaskList(data)
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   const firstDay = new Date(year, month, 1).getDay()
@@ -31,17 +35,21 @@ export default function CalendarPage() {
   const today = new Date()
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month
 
+  // FIX: Normalize task due dates to YYYY-MM-DD (strip time/timezone)
   const tasksByDate: Record<string, Task[]> = {}
   taskList.forEach((task) => {
-    const key = task.dueDate
+    // Handle both "2026-02-07" and "2026-02-07T00:00:00.000Z"
+    const key = task.dueDate ? task.dueDate.split('T')[0] : ''
+    if (!key) return
     if (!tasksByDate[key]) tasksByDate[key] = []
     tasksByDate[key].push(task)
   })
 
+  // FIX: Build calendar weeks
   const weeks: (number | null)[][] = []
   let days: (number | null)[] = []
 
-  for (let i = firstDay - 1; i >= 0; i--) {
+  for (let i = 0; i < firstDay; i++) {
     days.push(null)
   }
   for (let d = 1; d <= daysInMonth; d++) {
@@ -61,9 +69,11 @@ export default function CalendarPage() {
 
   const monthLabel = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
 
+  // FIX: Generate YYYY-MM-DD without timezone issues
   const formatDateKey = (day: number) => {
-    const d = new Date(year, month, day)
-    return d.toISOString().split("T")[0]
+    const m = String(month + 1).padStart(2, '0')
+    const d = String(day).padStart(2, '0')
+    return `${year}-${m}-${d}`  // e.g., "2026-02-07"
   }
 
   return (
@@ -72,6 +82,7 @@ export default function CalendarPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Calendar</h1>
         <p className="text-sm text-muted-foreground">View your schedule and deadlines</p>
       </div>
+
 
       <div className="border rounded-lg bg-background">
         <div className="flex items-center justify-between px-4 py-3 border-b">

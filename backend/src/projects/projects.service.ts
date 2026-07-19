@@ -25,6 +25,8 @@ export class ProjectsService {
   ) {}
 
   // Every project the user can see: owned by them, or where they're a member.
+  // Includes memberCount/taskCount so a project list (e.g. the dashboard's
+  // "Recent Projects" widget) never has to fire N follow-up requests.
   async findAllForUser(userId: string): Promise<Project[]> {
     const memberships = await this.membersRepository.find({
       where: { userId },
@@ -37,13 +39,21 @@ export class ProjectsService {
 
     return this.projectsRepository
       .createQueryBuilder('project')
+      .loadRelationCountAndMap('project.memberCount', 'project.members')
+      .loadRelationCountAndMap('project.taskCount', 'project.tasks')
       .where('project.id IN (:...projectIds)', { projectIds })
       .orderBy('project.createdAt', 'DESC')
       .getMany();
   }
 
   async findOne(id: string): Promise<Project> {
-    const project = await this.projectsRepository.findOne({ where: { id } });
+    const project = await this.projectsRepository
+      .createQueryBuilder('project')
+      .loadRelationCountAndMap('project.memberCount', 'project.members')
+      .loadRelationCountAndMap('project.taskCount', 'project.tasks')
+      .where('project.id = :id', { id })
+      .getOne();
+
     if (!project) {
       throw new NotFoundException('Project not found');
     }

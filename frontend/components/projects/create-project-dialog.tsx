@@ -20,10 +20,10 @@ import { getErrorMessage } from "@/lib/errors"
 import { toast } from "sonner"
 
 interface CreateProjectDialogProps {
-  onCreate: (data: ProjectData) => void | Promise<void>
+   onProjectCreated: () => void;
 }
 
-export function CreateProjectDialog() {
+export function CreateProjectDialog({ onProjectCreated }: CreateProjectDialogProps)  {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
@@ -36,6 +36,7 @@ export function CreateProjectDialog() {
     setLoading(true)
     try {
       await projectsApi.create({ name, description })
+      onProjectCreated();
       setOpen(false)
       setName("")
       setDescription("")

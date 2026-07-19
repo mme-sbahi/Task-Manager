@@ -44,6 +44,7 @@ export function KanbanBoard(projectId: any) {
             task.id === savedTask.id ? savedTask : task
           )
         );
+        toast.success("Task updated successfully!")
       } else {
         savedTask = await tasksApi.create(
           projectId.projectId,
@@ -51,6 +52,7 @@ export function KanbanBoard(projectId: any) {
         );
   
         setTasks(prev => [...prev, savedTask]);
+        toast.success("Task created successfully!")
       }
   
       setModalOpen(false);
