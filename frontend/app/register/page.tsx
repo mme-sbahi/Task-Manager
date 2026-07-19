@@ -12,6 +12,7 @@ import { AlertCircle, Loader2, CheckSquare } from "lucide-react"
 import { auth } from "@/lib/api"
 import { getErrorMessage } from "@/lib/errors"
 import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -84,6 +85,10 @@ export default function RegisterPage() {
 
     try {
       await auth.register(user.name, user.email, user.password)
+      toast.success("Welcome! 🎉", {
+        description: "You have been successfully signed up.",
+        duration: 4000
+      })
       router.push("/dashboard")
     } catch (err) {
       setServerError(getErrorMessage(err))
