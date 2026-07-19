@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: taskflow_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-taskflow}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-taskflow_password}
+      POSTGRES_DB: ${DATABASE_NAME:-taskflow_db}
+    ports:
+      - '5432:5432'
+    volumes:
+      - taskflow_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${DATABASE_USER:-taskflow} -d ${DATABASE_NAME:-taskflow_db}',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      target: development
+    container_name: taskflow_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_HOST: postgres
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./backend/src:/usr/src/app/src
+      - /usr/src/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: npm run start:dev
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: taskflow_frontend
+    restart: unless-stopped
+    environment:
+      # NEXT_PUBLIC_ vars are baked in for the BROWSER, which can't resolve
+      # Docker-internal hostnames like "backend" — it has to be localhost,
+      # the same as if the frontend were running outside Docker entirely.
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      # Needed on some hosts/filesystems for Next's dev-mode hot reload to
+      # pick up file changes through a Docker bind mount.
+      WATCHPACK_POLLING: 'true'
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/.next
+    depends_on:
+      - backend
+    command: npm run dev
+
+volumes:
+  taskflow_postgres_data:
