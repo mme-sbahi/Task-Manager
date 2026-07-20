@@ -26,7 +26,7 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('TaskFlow API')
-    .setDescription('Task management API — Auth & Users (Day 1)')
+    .setDescription('Task management API — Auth & Users')
     .setVersion('0.1.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },

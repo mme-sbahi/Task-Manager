@@ -1,7 +1,7 @@
 {
   "name": "taskflow-backend",
   "version": "0.1.0",
-  "description": "TaskFlow - NestJS backend (Day 1: Auth, Users, Docker, Swagger)",
+  "description": "TaskFlow - NestJS backend",
   "private": true,
   "license": "MIT",
   "scripts": {
