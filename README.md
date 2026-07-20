@@ -8,7 +8,7 @@ add), a Kanban-style task board, and a live dashboard.
 
 ```bash
 git clone <this-repo>
-cd taskflow
+cd Task-Manager
 make setup   # copies .env templates — edit them if you want different secrets
 make up      # builds and starts postgres + backend + frontend
 ```
@@ -21,7 +21,7 @@ No `make`? The equivalent is just:
 ```bash
 cp backend/.env.example backend/.env
 cp frontend/.env.local.example frontend/.env.local
-docker-compose up --build
+docker compose up --build
 ```
 
 Other handy commands — see `make help` for the full list:
