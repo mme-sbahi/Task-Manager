@@ -49,31 +49,6 @@ You'll need a local Postgres instance matching the `.env` credentials.
 Refresh tokens are never stored in plaintext — only a bcrypt hash lives on
 `users.hashed_refresh_token`, rotated on every refresh.
 
-## The invitation flow (not a direct add)
-
-Inviting someone to a project never grants access by itself. It creates a
-`PENDING` `ProjectInvitation`; only once the invited person explicitly
-accepts does a real `ProjectMember` row get created. Membership creation and
-the invitation-status update happen in a single DB transaction — either both
-succeed or neither does.
-
-```
-OWNER/ADMIN invites → PENDING invitation created
-                              │
-              invited user sees it via GET /invitations/me
-                              │
-                 ┌────────────┴────────────┐
-              accepts                   declines
-                 │                         │
-   ProjectMember row created      invitation marked DECLINED
-   invitation marked ACCEPTED     (no membership, ever)
-```
-
-**Known limitation:** invites require the email to already belong to a
-registered account — inviting someone who hasn't signed up yet isn't
-supported (they'd need to register first, then be re-invited). A "pending
-invite waiting for signup" flow is a reasonable next step, deliberately
-out of scope here.
 
 ## Routes implemented
 
@@ -154,36 +129,3 @@ test
 └── app.e2e-spec.ts      — full HTTP walkthrough
 ```
 
-## Design notes
-
-- **Password & refresh-token hashes are never serialized** — `@Exclude()` on
-  the entity, stripped a second time in `AuthService` before the response
-  leaves the controller.
-- **`synchronize` is environment-gated**: `true` outside `NODE_ENV=production`,
-  `false` in production. This is a safety rail, not a substitute for real
-  migrations — **before an actual production deploy, generate migrations**
-  (`npm run migration:generate -- src/migrations/InitialSchema`, then
-  `npm run migration:run`) and never let `synchronize` touch a database with
-  real data in it.
-- **Global `ValidationPipe`** (`whitelist` + `forbidNonWhitelisted`) rejects
-  any request body field not declared on a DTO.
-- **Two separate JWT strategies** (`jwt`, `jwt-refresh`) with two secrets and
-  two guards, so an access token can never be replayed against `/auth/refresh`.
-- **Invitation accept is transactional** — membership creation and the
-  invitation status update either both commit or both roll back.
-
-## Known limitations (called out deliberately, not overlooked)
-
-- Tokens are returned in the JSON response body, not set as httpOnly
-  cookies — the frontend is responsible for storage. An XSS vulnerability
-  in the frontend could read them. The correct production fix is the
-  backend setting `httpOnly, secure, sameSite` cookies directly via
-  `Set-Cookie`, which is a real architecture change (CORS `credentials`,
-  CSRF mitigation) intentionally out of scope for this timeline.
-- One refresh token per user, not per device — logging in on a second
-  device invalidates the first device's session.
-- No rate limiting on `/auth/login` or `/auth/register` yet.
-- No `comments` module — this was on the explicit "cut first if short on
-  time" list from day one.
-- Invitations require the invited email to already be registered (see
-  above).

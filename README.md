@@ -59,13 +59,3 @@ taskflow/
 
 Each subfolder has its own README/TODO with the details specific to it —
 this file is intentionally just the entry point.
-
-## Known limitations
-
-These are deliberate scope decisions for a one-week project, not oversights
-— see `backend/README.md`'s "Known limitations" section for the full list
-and reasoning. The short version: tokens live in the response body rather
-than httpOnly cookies (frontend's responsibility to store safely), one
-refresh token per user rather than per-device, no rate limiting yet, no
-`comments` module (explicitly deferred), and invitations require the
-invited email to already be a registered account.
