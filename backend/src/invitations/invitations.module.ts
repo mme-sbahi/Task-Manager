@@ -10,7 +10,7 @@ import { UsersModule } from '../users/users.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([ProjectInvitation]),
-    ProjectsModule, // gives access to ProjectMemberGuard/ProjectOwnerGuard + ProjectMember repo
+    ProjectsModule,
     UsersModule,
   ],
   controllers: [ProjectInvitationsController, InvitationsController],

@@ -15,10 +15,6 @@ import { TaskProjectMemberGuard } from './guards/task-project-member.guard';
 import { TasksService } from './tasks.service';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
-// Only JwtAuthGuard at the class level here — TaskProjectMemberGuard is
-// applied per-route below, only on the :id routes. It can't be a
-// class-level guard, because it tries to resolve `:id` as a task id, and
-// GET /tasks/me has no :id param to resolve.
 @ApiTags('tasks')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)

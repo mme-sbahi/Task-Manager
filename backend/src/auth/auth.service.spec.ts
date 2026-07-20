@@ -120,7 +120,7 @@ describe('AuthService', () => {
       });
 
       expect(result.accessToken).toBe('signed.jwt.token');
-      expect(jwtService.signAsync).toHaveBeenCalledTimes(2); // access + refresh
+      expect(jwtService.signAsync).toHaveBeenCalledTimes(2);
     });
   });
 

@@ -11,9 +11,6 @@ import { Project } from '../../projects/entities/project.entity';
 import { ProjectRole } from '../../projects/enums/project-role.enum';
 import { InvitationStatus } from '../enums/invitation-status.enum';
 
-// A ProjectMember row is only ever created once an invitation is accepted.
-// Inviting someone never grants access by itself — it just creates this
-// PENDING record for them to respond to.
 @Entity('project_invitations')
 export class ProjectInvitation {
   @PrimaryGeneratedColumn('uuid')
@@ -40,7 +37,6 @@ export class ProjectInvitation {
   @JoinColumn({ name: 'invited_by_id' })
   invitedBy?: User;
 
-  // The role they'll be granted if/when they accept.
   @Column({ type: 'enum', enum: ProjectRole, default: ProjectRole.MEMBER })
   role: ProjectRole;
 

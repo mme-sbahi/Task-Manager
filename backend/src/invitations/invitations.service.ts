@@ -23,9 +23,6 @@ export class InvitationsService {
     private readonly usersService: UsersService,
   ) {}
 
-  // Invites several people at once. One bad email (unregistered, already a
-  // member, already has a pending invite) doesn't fail the whole batch —
-  // each is attempted independently and the caller gets a clear summary.
   async inviteMembers(
     projectId: string,
     invitedById: string,
@@ -65,9 +62,6 @@ export class InvitationsService {
   ): Promise<ProjectInvitation> {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
-      // Known limitation: invitations require the email to already belong
-      // to a registered account. Inviting someone who hasn't signed up yet
-      // isn't supported — they'd need to register first, then be re-invited.
       throw new NotFoundException(`No user found with email ${email}`);
     }
 
@@ -99,7 +93,6 @@ export class InvitationsService {
     return this.invitationsRepository.save(invitation);
   }
 
-  // Every pending invitation waiting on this user, across every project.
   async findPendingForUser(userId: string): Promise<ProjectInvitation[]> {
     return this.invitationsRepository.find({
       where: { invitedUserId: userId, status: InvitationStatus.PENDING },
@@ -108,8 +101,6 @@ export class InvitationsService {
     });
   }
 
-  // Invitation history for a project (pending + resolved) — for OWNER/ADMIN
-  // to see who's been invited and how they responded.
   async findAllForProject(projectId: string): Promise<ProjectInvitation[]> {
     return this.invitationsRepository.find({
       where: { projectId },
@@ -121,8 +112,7 @@ export class InvitationsService {
   async accept(invitationId: string, userId: string): Promise<ProjectMember> {
     const invitation = await this.getOwnPendingInvitation(invitationId, userId);
 
-    // Membership creation + invitation status update happen atomically —
-    // either both succeed or neither does.
+
     return this.invitationsRepository.manager.transaction(async (manager) => {
       const member = manager.create(ProjectMember, {
         projectId: invitation.projectId,

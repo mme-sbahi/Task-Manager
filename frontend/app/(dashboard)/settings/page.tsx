@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,13 +9,23 @@ import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Camera } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { getInitials } from "@/lib/utils"
 
 export default function SettingsPage() {
-  const [name, setName] = useState("Sahil A.")
-  const [email, setEmail] = useState("sahil@company.com")
+  const { user } = useAuth()
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+
+  useEffect(() => {
+    if (user) {
+      setName(user.fullName)
+      setEmail(user.email)
+    }
+  }, [user])
 
   const handleProfileSave = (e: React.FormEvent) => { e.preventDefault(); /* TODO: import { settings } from '@/lib/api'; await settings.updateProfile({ name, email }) */ }
   const handlePasswordChange = (e: React.FormEvent) => { e.preventDefault(); /* TODO: import { settings } from '@/lib/api'; await settings.changePassword({ currentPassword, newPassword }) */ }
@@ -37,7 +47,7 @@ export default function SettingsPage() {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <Avatar className="h-16 w-16">
-                  <AvatarFallback>SA</AvatarFallback>
+                  <AvatarFallback>{user?.fullName ? getInitials(user.fullName) : "??"}</AvatarFallback>
                 </Avatar>
                 <Button size="icon" variant="secondary" className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full" type="button">
                   {/* TODO: import { settings } from '@/lib/api'; await settings.uploadAvatar(file) */}
@@ -98,7 +108,6 @@ export default function SettingsPage() {
               <p className="text-xs text-muted-foreground">Toggle dark mode on/off</p>
             </div>
             <Switch />
-            {/* TODO: Persist theme preference */}
           </div>
           <Separator />
           <div className="flex items-center justify-between">
@@ -107,7 +116,6 @@ export default function SettingsPage() {
               <p className="text-xs text-muted-foreground">Reduce spacing for a denser view</p>
             </div>
             <Switch />
-            {/* TODO: Implement compact mode */}
           </div>
         </CardContent>
       </Card>

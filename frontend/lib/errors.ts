@@ -1,8 +1,6 @@
-// lib/errors.ts
 import { isAxiosError } from "axios"
 
-// Fallbacks for when the backend gives no message at all (e.g. the server
-// is down, or a network error with no response object).
+
 const FRIENDLY_STATUS_MESSAGES: Record<number, string> = {
   400: "Please check the information you entered.",
   401: "Incorrect email or password.",

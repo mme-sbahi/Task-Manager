@@ -35,7 +35,6 @@ import { InvitationsModule } from './invitations/invitations.module';
     TasksModule,
     DashboardModule,
     InvitationsModule,
-    // CommentsModule lands later (cut-first item if time is tight)
   ],
 })
 export class AppModule {}

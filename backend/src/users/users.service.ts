@@ -19,8 +19,6 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  // Fetches the user together with the (normally hidden) refresh token hash.
-  // Used only by AuthService when validating a refresh token.
   async findByIdWithRefreshToken(id: string): Promise<User | null> {
     return this.usersRepository
       .createQueryBuilder('user')

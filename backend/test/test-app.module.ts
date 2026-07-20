@@ -8,9 +8,6 @@ import { TasksModule } from '../src/tasks/tasks.module';
 import { DashboardModule } from '../src/dashboard/dashboard.module';
 import { InvitationsModule } from '../src/invitations/invitations.module';
 
-// Mirrors AppModule, but points at a dedicated `taskflow_test` database
-// (see .env.test) so e2e runs never touch your dev data. Every run drops
-// and recreates the schema, so tests always start from a clean slate.
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.test' }),

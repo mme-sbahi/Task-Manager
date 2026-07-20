@@ -19,8 +19,6 @@ export class TasksService {
     });
   }
 
-  // Every task assigned to this user, across every project they belong to.
-  // Powers the "My Tasks" view and the dashboard stat cards.
   async findAssignedToUser(userId: string): Promise<Task[]> {
     return this.tasksRepository.find({
       where: { assigneeId: userId },

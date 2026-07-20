@@ -35,17 +35,14 @@ export default function CalendarPage() {
   const today = new Date()
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month
 
-  // FIX: Normalize task due dates to YYYY-MM-DD (strip time/timezone)
   const tasksByDate: Record<string, Task[]> = {}
   taskList.forEach((task) => {
-    // Handle both "2026-02-07" and "2026-02-07T00:00:00.000Z"
     const key = task.dueDate ? task.dueDate.split('T')[0] : ''
     if (!key) return
     if (!tasksByDate[key]) tasksByDate[key] = []
     tasksByDate[key].push(task)
   })
 
-  // FIX: Build calendar weeks
   const weeks: (number | null)[][] = []
   let days: (number | null)[] = []
 
@@ -69,11 +66,10 @@ export default function CalendarPage() {
 
   const monthLabel = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
 
-  // FIX: Generate YYYY-MM-DD without timezone issues
   const formatDateKey = (day: number) => {
     const m = String(month + 1).padStart(2, '0')
     const d = String(day).padStart(2, '0')
-    return `${year}-${m}-${d}`  // e.g., "2026-02-07"
+    return `${year}-${m}-${d}`  
   }
 
   return (

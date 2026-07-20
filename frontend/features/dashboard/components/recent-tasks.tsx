@@ -56,7 +56,6 @@ export function RecentTasks() {
   useEffect(() => {
     tasks.listMyTasks()
       .then(data => {
-        // Sort by due date (closest first), then take last 5
         const sorted = data
           .filter(t => t.dueDate)
           .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())

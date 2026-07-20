@@ -25,7 +25,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { KanbanBoard } from "@/components/projects/kanban-board"
+import { KanbanBoard } from "@/features/projects/components/kanban-board"
 import { ProjectData, ProjectMember, projects, Project } from "@/lib/api"
 import { getErrorMessage } from "@/lib/errors"
 
@@ -54,6 +54,7 @@ export default function ProjectDetailPage() {
       setEditDescription(projectData.description)
     } catch {
       toast.error("Failed to load project")
+      router.push("/projects")
     }
   }
 
@@ -110,13 +111,17 @@ export default function ProjectDetailPage() {
     if (emails.length === 0) return
     setInviting(true)
     try {
-      // TODO: Replace with real API call
-      // for (const email of emails) { await projects.inviteMember(projectId, email) }
-      toast.success(`Invitations sent to ${emails.length} email(s)`)
-      setInviteEmails("")
-      setInviteOpen(false)
-    } catch {
-      toast.error("Failed to send invitations")
+      const result = await projects.inviteMember(projectId, { emails, role: "MEMBER" })
+if (result.failed.length > 0) {
+  toast.error(result.failed[0].reason)
+} else {
+  toast.success(`Invitations sent successfully!`)
+  setInviteEmails("")
+  setInviteOpen(false)
+}
+      
+    } catch (err) {
+      toast.error(getErrorMessage(err))
     } finally {
       setInviting(false)
     }

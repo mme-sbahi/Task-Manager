@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { TaskCard } from "@/components/projects/task-card"
-import { TaskModal } from "@/components/tasks/task-modal"
+import { TaskCard } from "@/features/projects/components/task-card"
+import { TaskModal } from "@/features/tasks/components/task-modal"
 import { tasks as tasksApi, Task } from '@/lib/api'
 import { toast } from "sonner"
 import { getErrorMessage } from "@/lib/errors"

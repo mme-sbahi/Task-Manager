@@ -13,8 +13,6 @@ export const dataSourceOptions: DataSourceOptions = {
   database: process.env.DATABASE_NAME || 'taskflow_db',
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-  // NOTE: synchronize is convenient for Day 1-2 development but should be
-  // switched to migrations before this ever touches a real environment.
   synchronize: true,
   logging: process.env.NODE_ENV === 'development',
 };
