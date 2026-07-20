@@ -34,6 +34,7 @@ export interface Project {
   name: string
   description: string
   ownerId: string
+  status?: string
   createdAt: string
   updatedAt: string
   taskCount?: number
@@ -96,6 +97,25 @@ export interface PasswordData {
   newPassword: string
 }
 
+export interface Invitation {
+  id: string
+  projectId: string
+  projectName: string
+  inviterId?: string
+  inviterName?: string
+  inviterEmail?: string
+  status: "PENDING" | "ACCEPTED" | "DECLINED"
+  createdAt: string
+}
+
+interface ProjectInvitation {
+  id: string
+  projectId: string
+  invitedUserId: string
+  role: string
+  status: "PENDING" | "ACCEPTED" | "DECLINED"
+  createdAt: string
+}
 // ------------------------------------------------------------------
 // Auth API
 // ------------------------------------------------------------------
@@ -111,6 +131,11 @@ export const auth = {
     const { data } = await api.post("/auth/register", { fullName, email, password })
     setAuthTokens(data.accessToken, data.refreshToken)
     return { user: data.user }
+  },
+
+  async me(): Promise<User> {
+    const { data } = await api.get("/auth/profile")
+    return data
   },
 
   async logout(): Promise<void> {
@@ -169,9 +194,13 @@ export const projects = {
     if (!res) throw new Error('Failed to fetch members')
     return res.data
   },
-
-  async inviteMember(projectId: number, email: string): Promise<void> {
-
+  
+  async inviteMember(
+    projectId: string,
+    data: { emails: string[]; role?: string }
+  ): Promise<{ invited: ProjectInvitation[]; failed: { email: string; reason: string }[] }> {
+    const res = await api.post(`/projects/${projectId}/invitations`, data)
+    return res.data
   },
 
   async removeMember(projectId: string, memberId: string): Promise<void> {
@@ -266,5 +295,24 @@ export const settings = {
     // return res.json()
 
     return { url: URL.createObjectURL(file) }
+  },
+}
+
+// ------------------------------------------------------------------
+// Invitations API
+// ------------------------------------------------------------------
+
+export const invitations = {
+  async listMyInvitations(): Promise<Invitation[]> {
+    const { data } = await api.get("/invitations/me")
+    return data
+  },
+
+  async accept(id: string): Promise<void> {
+    await api.post(`/invitations/${id}/accept`)
+  },
+
+  async decline(id: string): Promise<void> {
+    await api.post(`/invitations/${id}/decline`)
   },
 }

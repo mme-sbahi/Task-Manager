@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import {
   LayoutDashboard, FolderKanban, ListChecks, Calendar, Settings,
   ChevronLeft, ChevronRight, LogOut,
@@ -10,14 +10,13 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-import { clearAuthTokens } from "@/lib/auth-cookie"
+import { useAuth } from "@/hooks/use-auth"
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/my-tasks", label: "My Tasks", icon: ListChecks },
   { href: "/calendar", label: "Calendar", icon: Calendar },
-  // { href: "/settings", label: "Settings", icon: Settings },
 ]
 
 interface SidebarProps {
@@ -27,15 +26,10 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
-
-  const handleLogout = () => {
-    clearAuthTokens()
-    router.push("/login")
-  }
+  const { user, initials, logout } = useAuth()
 
   return (
-    <aside className={cn("flex flex-col border-r bg-sidebar transition-all duration-300", collapsed ? "w-16" : "w-60")}>
+    <aside className={cn("flex flex-col h-full border-r bg-sidebar transition-all duration-300", collapsed ? "w-16" : "w-60")}>
       <div className="flex h-14 items-center justify-between px-4">
         {!collapsed ? (
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-sidebar-foreground">
@@ -75,11 +69,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div className={cn("p-3 space-y-2", collapsed && "flex flex-col items-center")}>
         <div className={cn("flex items-center gap-3", collapsed && "flex-col")}>
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="text-xs">SA</AvatarFallback>
+            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
           </Avatar>
-          {!collapsed && (
+          {!collapsed && user && (
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">Sahil A.</p>
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{user.fullName}</p>
             </div>
           )}
         </div>
@@ -87,7 +81,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleLogout}
+            onClick={logout}
             className="w-full justify-start text-muted-foreground hover:text-destructive text-xs h-8"
           >
             <LogOut className="h-3.5 w-3.5 mr-2" />
