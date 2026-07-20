@@ -6,9 +6,6 @@ import { Progress } from "@/components/ui/progress"
 import { FolderKanban, Users } from "lucide-react"
 import { projects as projectsApi, Project } from "@/lib/api"
 
-// Helper to calculate progress from tasks (if your API doesn't provide it)
-// For now, we'll use a placeholder since the Project type doesn't have task/member counts
-// You can replace this with real logic once your backend provides these fields
 
 export function RecentProjects() {
   const [projectList, setProjectList] = useState<Project[]>([])

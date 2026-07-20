@@ -10,10 +10,7 @@ import { Repository } from 'typeorm';
 import { Task } from '../entities/task.entity';
 import { ProjectMember } from '../../projects/entities/project-member.entity';
 
-// Used on routes like PATCH/DELETE /tasks/:id, where the URL only gives us
-// a task id, not a project id directly. Resolves task -> project -> checks
-// the caller is a member of that project, same as ProjectMemberGuard does
-// for project-scoped routes.
+
 @Injectable()
 export class TaskProjectMemberGuard implements CanActivate {
   constructor(

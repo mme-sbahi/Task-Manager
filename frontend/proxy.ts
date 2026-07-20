@@ -1,4 +1,3 @@
-// proxy.ts — at your project root, or inside src/ alongside your app/ folder
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 

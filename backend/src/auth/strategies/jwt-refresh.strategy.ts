@@ -18,9 +18,6 @@ export class JwtRefreshStrategy extends PassportStrategy(
       passReqToCallback: true,
     });
   }
-
-  // Attaches the raw refresh token to the payload so AuthService can compare
-  // it against the bcrypt hash stored on the user.
   async validate(req: Request, payload: JwtPayload) {
     const authHeader = req.get('Authorization') ?? '';
     const refreshToken = authHeader.replace('Bearer', '').trim();

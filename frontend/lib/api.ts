@@ -243,60 +243,50 @@ export const tasks = {
 // Settings API
 // ------------------------------------------------------------------
 
-export const settings = {
-  async updateProfile(data: ProfileData): Promise<User> {
-    // TODO: Replace with real API call
-    // const formData = new FormData()
-    // formData.append('name', data.name)
-    // formData.append('email', data.email)
-    // if (data.avatar) formData.append('avatar', data.avatar)
-    // const res = await fetch('/api/user/profile', {
-    //   method: 'PATCH',
-    //   body: formData,
-    // })
-    // if (!res.ok) throw new Error('Failed to update profile')
-    // return res.json()
+// export const settings = {
+//   async updateProfile(data: ProfileData): Promise<User> {
 
-    return {
-      id: "1",
-      fullName: data.name,
-      email: data.email,
-      role: "Product Designer",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      avatarInitials: data.name
-        .split(" ")
-        .map((s) => s[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2),
-    }
-  },
 
-  async changePassword(data: PasswordData): Promise<void> {
-    // TODO: Replace with real API call
-    // const res = await fetch('/api/user/password', {
-    //   method: 'PATCH',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data),
-    // })
-    // if (!res.ok) throw new Error('Failed to change password')
-  },
+//     return {
+//       id: "1",
+//       fullName: data.name,
+//       email: data.email,
+//       role: "Product Designer",
+//       createdAt: new Date().toISOString(),
+//       updatedAt: new Date().toISOString(),
+//       avatarInitials: data.name
+//         .split(" ")
+//         .map((s) => s[0])
+//         .join("")
+//         .toUpperCase()
+//         .slice(0, 2),
+//     }
+//   },
 
-  async uploadAvatar(file: File): Promise<{ url: string }> {
-    // TODO: Replace with real API call
-    // const formData = new FormData()
-    // formData.append('avatar', file)
-    // const res = await fetch('/api/user/avatar', {
-    //   method: 'POST',
-    //   body: formData,
-    // })
-    // if (!res.ok) throw new Error('Failed to upload avatar')
-    // return res.json()
+//   async changePassword(data: PasswordData): Promise<void> {
+//     // TODO: Replace with real API call
+//     // const res = await fetch('/api/user/password', {
+//     //   method: 'PATCH',
+//     //   headers: { 'Content-Type': 'application/json' },
+//     //   body: JSON.stringify(data),
+//     // })
+//     // if (!res.ok) throw new Error('Failed to change password')
+//   },
 
-    return { url: URL.createObjectURL(file) }
-  },
-}
+//   async uploadAvatar(file: File): Promise<{ url: string }> {
+//     // TODO: Replace with real API call
+//     // const formData = new FormData()
+//     // formData.append('avatar', file)
+//     // const res = await fetch('/api/user/avatar', {
+//     //   method: 'POST',
+//     //   body: formData,
+//     // })
+//     // if (!res.ok) throw new Error('Failed to upload avatar')
+//     // return res.json()
+
+//     return { url: URL.createObjectURL(file) }
+//   },
+// }
 
 // ------------------------------------------------------------------
 // Invitations API

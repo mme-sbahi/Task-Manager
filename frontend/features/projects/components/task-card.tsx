@@ -22,7 +22,7 @@ export function TaskCard({ task, onEdit, onDelete }: { task: Task; onEdit: () =>
   const formatDisplayDate = (isoDate: string) => {
   if (!isoDate) return 'No due date';
   const [y, m, d] = isoDate.split('T')[0].split('-').map(Number);
-  return `${m}/${d}/${y}`;  // 2/7/2026
+  return `${m}/${d}/${y}`; 
 };
   return (
     <Card className="group">

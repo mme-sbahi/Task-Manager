@@ -11,7 +11,7 @@ import { getErrorMessage } from "@/lib/errors"
 import { AlertCircle, Loader2, CheckSquare } from "lucide-react"
 import { z } from "zod"
 import { auth } from "@/lib/api"
-import { toast } from "sonner" // Changed from Toaster to toast
+import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
 
 const loginSchema = z.object({
@@ -75,10 +75,7 @@ export default function LoginPage() {
 
         try {
           await auth.login(user.email, user.password)
-          toast.success("Welcome back! 🎉", {
-            description: "You have been successfully signed in.",
-            duration: 4000,
-          })
+          toast.success("Welcome back! 🎉")
           
           router.push("/dashboard")
 

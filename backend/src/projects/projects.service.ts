@@ -15,10 +15,6 @@ export class ProjectsService {
     @InjectRepository(ProjectMember)
     private readonly membersRepository: Repository<ProjectMember>,
   ) {}
-
-  // Every project the user can see: owned by them, or where they're a member.
-  // Includes memberCount/taskCount so a project list (e.g. the dashboard's
-  // "Recent Projects" widget) never has to fire N follow-up requests.
   async findAllForUser(userId: string): Promise<Project[]> {
     const memberships = await this.membersRepository.find({
       where: { userId },
@@ -52,11 +48,6 @@ export class ProjectsService {
     return project;
   }
 
-  // Creating a project also creates the OWNER membership row in the same
-  // transaction, so "who owns this" and "who can access this" never drift
-  // out of sync with each other. This is the one case where membership is
-  // created directly, without going through the invitation flow — you don't
-  // invite yourself to a project you're founding.
   async create(ownerId: string, dto: CreateProjectDto): Promise<Project> {
     const project = this.projectsRepository.create({
       name: dto.name,

@@ -113,7 +113,6 @@ export class AuthService {
     await this.usersService.setRefreshTokenHash(userId, hashedRefreshToken);
   }
 
-  // Strips sensitive fields before a User entity is ever returned in a response.
   private sanitizeUser(user: User) {
     const { passwordHash, hashedRefreshToken, ...safeUser } = user;
     return safeUser;

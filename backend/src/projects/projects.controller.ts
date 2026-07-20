@@ -18,9 +18,6 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectMemberGuard } from './guards/project-member.guard';
 import { ProjectOwnerGuard } from './guards/project-owner.guard';
 
-// Note: inviting people is handled by InvitationsModule
-// (POST /projects/:id/invitations), not here — joining a project always
-// goes through an accept/decline step, never a direct add.
 @ApiTags('projects')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)

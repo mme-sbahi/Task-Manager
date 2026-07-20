@@ -13,8 +13,6 @@ async function bootstrap() {
     origin: configService.get<string>('CORS_ORIGIN') ?? 'http://localhost:3000',
     credentials: true,
   });
-
-  // Strips unknown properties and rejects payloads that don't match DTOs.
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -22,9 +20,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
-  // Makes @Exclude() on the User entity (password hash, refresh token hash)
-  // actually apply to every response.
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   app.useGlobalFilters(new HttpExceptionFilter());

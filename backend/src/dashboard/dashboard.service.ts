@@ -35,10 +35,6 @@ export class DashboardService {
     const endOfToday = new Date();
     endOfToday.setHours(23, 59, 59, 999);
     const now = new Date();
-
-    // One aggregate query rather than five separate COUNT(*) round trips.
-    // FILTER (WHERE ...) is a Postgres-specific conditional-aggregate
-    // syntax — fine here since this backend only ever targets Postgres.
     const raw = await this.tasksRepository
       .createQueryBuilder('task')
       .select('COUNT(*)', 'total')

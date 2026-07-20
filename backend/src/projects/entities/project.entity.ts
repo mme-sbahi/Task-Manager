@@ -36,9 +36,6 @@ export class Project {
   @OneToMany(() => Task, (task) => task.project)
   tasks: Task[];
 
-  // Virtual fields — not real columns, never persisted. Populated only when
-  // ProjectsService explicitly asks for them via loadRelationCountAndMap().
-  // Plain queries (e.g. TypeORM's default .find()) leave these undefined.
   memberCount?: number;
   taskCount?: number;
 

@@ -45,7 +45,6 @@ function isUrgent(task: Task): boolean {
   
   const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
   
-  // Urgent if due today or overdue, or high priority with tight deadline
   return diffDays <= 0 || (task.priority === "HIGH" && diffDays <= 1)
 }
 
@@ -59,7 +58,6 @@ export function UpcomingDeadlines() {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
         
-        // Filter tasks due in next 5 days (including today), exclude done tasks
         const upcoming = data
           .filter(task => {
             if (!task.dueDate) return false

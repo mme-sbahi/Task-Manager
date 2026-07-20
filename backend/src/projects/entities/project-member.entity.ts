@@ -11,9 +11,6 @@ import { User } from '../../users/entities/user.entity';
 import { Project } from './project.entity';
 import { ProjectRole } from '../enums/project-role.enum';
 
-// This is the many-to-many between User and Project, modeled explicitly
-// (rather than a plain @ManyToMany) specifically so it can carry the `role`
-// column. A user can only have one membership row per project.
 @Entity('project_members')
 @Unique(['projectId', 'userId'])
 export class ProjectMember {

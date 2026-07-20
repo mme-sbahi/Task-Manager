@@ -57,8 +57,7 @@ export function TaskModal({ projectId, open, onOpenChange, task, onSave }: {proj
     description,
     status: status.toUpperCase() as Task["status"],
     priority: priority.toUpperCase() as Task["priority"],
-    // Send YYYY-MM-DD, or today's date in LOCAL timezone (not UTC)
-    dueDate: dueDate || new Date().toLocaleDateString('en-CA'),  // "2026-07-19" in local time
+    dueDate: dueDate || new Date().toLocaleDateString('en-CA'), 
     assigneeId: assigneeId || undefined,
   });
 };
@@ -66,7 +65,7 @@ export function TaskModal({ projectId, open, onOpenChange, task, onSave }: {proj
 const formatDisplayDate = (isoDate: string) => {
   if (!isoDate) return 'No due date';
   const [y, m, d] = isoDate.split('T')[0].split('-').map(Number);
-  return `${m}/${d}/${y}`;  // 2/7/2026
+  return `${m}/${d}/${y}`; 
 };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

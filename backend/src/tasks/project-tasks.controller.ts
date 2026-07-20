@@ -6,8 +6,6 @@ import { ProjectMemberGuard } from '../projects/guards/project-member.guard';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 
-// Nested under a project: list & create only need "is this user a member
-// of the project", enforced by ProjectMemberGuard reading :id from the URL.
 @ApiTags('tasks')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, ProjectMemberGuard)
