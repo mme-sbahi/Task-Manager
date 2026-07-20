@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/use-auth"
-import { NotificationDropdown } from "@/features/invitations/components/notification-dropdown"
+import { NotificationDropdown } from "@/components/invitations/notification-dropdown"
 
 interface TopNavProps {
   onMenuToggle: () => void

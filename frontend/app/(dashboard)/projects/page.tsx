@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
-import { ProjectCard } from "@/features/projects/components/project-card"
-import { CreateProjectDialog } from "@/features/projects/components/create-project-dialog"
+import { ProjectCard } from "@/components/projects/project-card"
+import { CreateProjectDialog } from "@/components/projects/create-project-dialog"
 import { Project, projects as projectsApi } from "@/lib/api"
 
 export default function ProjectsPage() {

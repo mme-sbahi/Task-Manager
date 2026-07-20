@@ -13,64 +13,67 @@ import {
 } from "@/components/ui/select"
 import { tasks as tasksApi, Task, projects, ProjectMember } from '@/lib/api'
 
+interface TaskModalProps {
+  projectId: string;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  task: Task | null;
+  onSave: (data: Partial<Task>) => void;
+}
 
-export function TaskModal({ projectId, open, onOpenChange, task, onSave }: {projectId:string; 
-  open: boolean; onOpenChange: (v: boolean) => void; task: Task | null; onSave: (data: Partial<Task>) => void ; string
-}) {
+export function TaskModal({ projectId, open, onOpenChange, task, onSave }: TaskModalProps) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [status, setStatus] = useState("todo")
   const [priority, setPriority] = useState<"high" | "medium" | "low">("medium")
   const [dueDate, setDueDate] = useState("")
-  const [assigneeId, setAssigneeId] = useState("");
-
+  const [assigneeId, setAssigneeId] = useState("")
   const [members, setMembers] = useState<ProjectMember[]>([])
 
   useEffect(() => {
     const fetchMembers = async () => {
-      const data = await projects.listMembers(projectId);
-      console.log("API returned:", data);
-      setMembers(data);
-    };
-  
-    fetchMembers();
-  }, [projectId]);
-  
-  useEffect(() => {
-    console.log("members state:", members);
-  }, [members]);
+      const data = await projects.listMembers(projectId)
+      setMembers(data)
+    }
+    fetchMembers()
+  }, [projectId])
 
   useEffect(() => {
     if (task) {
-      setTitle(task.title); setDescription(task.description); setStatus(task.status)
-      setPriority(task.priority); setDueDate(task.dueDate ? task.dueDate.split('T')[0] : ''); setAssigneeId(task.assigneeId)
+      setTitle(task.title)
+      setDescription(task.description)
+      setStatus(task.status.toLowerCase())
+      setPriority(task.priority.toLowerCase() as "high" | "medium" | "low")
+      setDueDate(task.dueDate ? task.dueDate.split('T')[0] : '')
+      setAssigneeId(task.assigneeId ?? "")
     } else {
-      setTitle(""); setDescription(""); setStatus("todo"); setPriority("medium"); setDueDate(""); setAssigneeId("")
+      setTitle("")
+      setDescription("")
+      setStatus("todo")
+      setPriority("medium")
+      setDueDate("")
+      setAssigneeId("")
     }
   }, [task, open])
 
- const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSave({
+      title,
+      description,
+      status: status.toUpperCase() as Task["status"],
+      priority: priority.toUpperCase() as Task["priority"],
+      dueDate: dueDate || new Date().toLocaleDateString('en-CA'),
+      assigneeId: assigneeId || undefined,
+    })
+  }
 
-  onSave({
-    title,
-    description,
-    status: status.toUpperCase(),
-    priority: priority.toUpperCase(),
-    dueDate: dueDate || new Date().toLocaleDateString('en-CA'), 
-    assigneeId: assigneeId || undefined,
-  });
-};
-
-const formatDisplayDate = (isoDate: string) => {
-  if (!isoDate) return 'No due date';
-  const [y, m, d] = isoDate.split('T')[0].split('-').map(Number);
-  return `${m}/${d}/${y}`; 
-};
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{task ? "Edit Task" : "Create Task"}</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{task ? "Edit Task" : "Create Task"}</DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -113,25 +116,16 @@ const formatDisplayDate = (isoDate: string) => {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="task-assignee">Assignee</Label>
-                <Select
-    value={assigneeId}
-    onValueChange={setAssigneeId}
->
-    <SelectTrigger>
-        <SelectValue placeholder="Assign to" />
-    </SelectTrigger>
-
-    <SelectContent>
-        {members.map(member => (
-            <SelectItem
-                key={member.id}
-                value={member.userId} 
-            >
-                {member.user.fullName}
-            </SelectItem>
-        ))}
-    </SelectContent>
-</Select>
+                <Select value={assigneeId} onValueChange={setAssigneeId}>
+                  <SelectTrigger><SelectValue placeholder="Assign to" /></SelectTrigger>
+                  <SelectContent>
+                    {members.map(member => (
+                      <SelectItem key={member.id} value={member.userId}>
+                        {member.user.fullName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

@@ -25,7 +25,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { KanbanBoard } from "@/features/projects/components/kanban-board"
+import { KanbanBoard } from "@/components/projects/kanban-board"
 import { ProjectData, ProjectMember, projects, Project } from "@/lib/api"
 import { getErrorMessage } from "@/lib/errors"
 

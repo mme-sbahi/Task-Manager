@@ -31,7 +31,7 @@ Expect the profile, with no `passwordHash` field.
 ```bash
 curl -s -X POST http://localhost:3001/projects \
   -H "Authorization: Bearer $OWNER_TOKEN" -H "Content-Type: application/json" \
-  -d '{"name":"Leet Recruitment Project","description":"Take-home project"}' | tee project.json
+  -d '{"name":"Recruitment Project","description":"Take-home project"}' | tee project.json
 
 PROJECT_ID=$(jq -r .id project.json)
 ```

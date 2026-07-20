@@ -119,7 +119,7 @@ describe('TaskFlow (e2e)', () => {
       const res = await request(app.getHttpServer())
         .post('/projects')
         .set('Authorization', `Bearer ${ownerToken}`)
-        .send({ name: 'Leet Recruitment Project', description: 'Take-home' })
+        .send({ name: 'Recruitment Project', description: 'Take-home' })
         .expect(201);
 
       expect(res.body.id).toBeDefined();

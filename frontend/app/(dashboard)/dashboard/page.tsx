@@ -2,10 +2,10 @@
 
 import { FolderKanban, ListChecks, CheckCircle2, Clock, AlertTriangle } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
-import { StatCard } from "@/features/dashboard/components/stat-card"
-import { RecentTasks } from "@/features/dashboard/components/recent-tasks"
-import { UpcomingDeadlines } from "@/features/dashboard/components/upcoming-deadlines"
-import { RecentProjects } from "@/features/dashboard/components/recent-projects"
+import { StatCard } from "@/components/dashboard/stat-card"
+import { RecentTasks } from "@/components/dashboard/recent-tasks"
+import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines"
+import { RecentProjects } from "@/components/dashboard/recent-projects"
 import { dashboard } from "@/lib/api"
 
 export default function DashboardPage() {

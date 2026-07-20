@@ -10,36 +10,36 @@ setup: ## One-time setup — copy env file templates (edit them if needed)
 	@echo "Env files ready. Run 'make up' next."
 
 up: ## Start postgres + backend + frontend (build if needed, foreground)
-	docker-compose up --build
+	docker compose up --build
 
 up-d: ## Same as 'up', but detached
-	docker-compose up --build -d
+	docker compose up --build -d
 
 down: ## Stop everything (keeps the Postgres volume)
-	docker-compose down
+	docker compose down
 
 restart: down up-d ## Stop then start again, detached
 
 logs: ## Tail logs from every service
-	docker-compose logs -f
+	docker compose logs -f
 
 logs-backend: ## Tail backend logs only
-	docker-compose logs -f backend
+	docker compose logs -f backend
 
 logs-frontend: ## Tail frontend logs only
-	docker-compose logs -f frontend
+	docker compose logs -f frontend
 
 ps: ## Show running services
-	docker-compose ps
+	docker compose ps
 
 test: ## Run backend unit tests inside the running backend container
-	docker-compose exec backend npm run test
+	docker compose exec backend npm run test
 
 test-e2e: ## Run backend e2e tests (needs: make db-test once, see backend/README.md)
-	docker-compose exec backend npm run test:e2e
+	docker compose exec backend npm run test:e2e
 
 psql: ## Open a psql shell into the dev database
 	docker exec -it taskflow_postgres psql -U taskflow -d taskflow_db
 
 clean: ## Stop everything AND wipe the Postgres volume (destructive)
-	docker-compose down -v
+	docker compose down -v

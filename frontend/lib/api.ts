@@ -162,7 +162,6 @@ export const dashboard = {
 export const projects = {
   async list(): Promise<Project[]> {
     const res = await api.get('/projects')
-    console.log("hnaaaaaaaaaa",res.data)
     return res.data
 
   },
@@ -220,7 +219,6 @@ export const tasks = {
 
   async listMyTasks(): Promise<Task[]> {
     const res = await api.get('/tasks/me')
-        console.log("my tasksssss", res.data);
     return res.data
   },
 

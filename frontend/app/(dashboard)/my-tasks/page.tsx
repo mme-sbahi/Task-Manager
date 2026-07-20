@@ -64,51 +64,53 @@ export default function MyTasksPage() {
         <p className="text-sm text-muted-foreground">Tasks assigned to you</p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search tasks..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[130px]">
-            <Filter className="h-3.5 w-3.5 mr-1.5" />
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="TODO">To Do</SelectItem>
-            <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-            <SelectItem value="REVIEW">Review</SelectItem>
-            <SelectItem value="DONE">Done</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-          <SelectTrigger className="w-[130px]">
-            <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
-            <SelectValue placeholder="Priority" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Priority</SelectItem>
-            <SelectItem value="HIGH">High</SelectItem>
-            <SelectItem value="MEDIUM">Medium</SelectItem>
-            <SelectItem value="LOW">Low</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={sortBy} onValueChange={(v) => setSortBy(v as "dueDate" | "priority")}>
-          <SelectTrigger className="w-[130px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="dueDate">Sort by Date</SelectItem>
-            <SelectItem value="priority">Sort by Priority</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+<div className="flex flex-wrap items-center gap-3">
+  <div className="relative flex-[2] min-w-[200px]">
+    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+    <Input
+      placeholder="Search tasks..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      className="pl-8 w-full"
+    />
+  </div>
+  <div className="flex items-center gap-3 flex-1 justify-end">
+    <Select value={statusFilter} onValueChange={setStatusFilter}>
+      <SelectTrigger className="w-[130px]">
+        <Filter className="h-3.5 w-3.5 mr-1.5" />
+        <SelectValue placeholder="Status" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All Status</SelectItem>
+        <SelectItem value="TODO">To Do</SelectItem>
+        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+        <SelectItem value="REVIEW">Review</SelectItem>
+        <SelectItem value="DONE">Done</SelectItem>
+      </SelectContent>
+    </Select>
+    <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+      <SelectTrigger className="w-[130px]">
+        <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
+        <SelectValue placeholder="Priority" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All Priority</SelectItem>
+        <SelectItem value="HIGH">High</SelectItem>
+        <SelectItem value="MEDIUM">Medium</SelectItem>
+        <SelectItem value="LOW">Low</SelectItem>
+      </SelectContent>
+    </Select>
+    <Select value={sortBy} onValueChange={(v) => setSortBy(v as "dueDate" | "priority")}>
+      <SelectTrigger className="w-[130px]">
+        <SelectValue placeholder="Sort by" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="dueDate">Sort by Date</SelectItem>
+        <SelectItem value="priority">Sort by Priority</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+</div>
 
       {loading ? (
         <div className="space-y-3">

@@ -49,7 +49,7 @@ describe('ProjectsService', () => {
         where: jest.fn().mockReturnThis(),
         getOne: jest.fn().mockResolvedValue({
           id: 'project-1',
-          name: 'Leet Recruitment Project',
+          name: 'Recruitment Project',
           memberCount: 3,
           taskCount: 12,
         }),
@@ -88,12 +88,12 @@ describe('ProjectsService', () => {
     it('creates the project and an OWNER membership row for the creator', async () => {
       (projectsRepo.save as jest.Mock).mockResolvedValue({
         id: 'project-1',
-        name: 'Leet Recruitment Project',
+        name: 'Recruitment Project',
         ownerId: 'user-1',
       });
 
       const project = await service.create('user-1', {
-        name: 'Leet Recruitment Project',
+        name: 'Recruitment Project',
       });
 
       expect(project.id).toBe('project-1');
